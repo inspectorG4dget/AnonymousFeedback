@@ -1,13 +1,44 @@
+<!DOCTYPE html>
 <html>
-<head> </head>
+<head>
+   <title>Anonymous Feedback</title>
 
+
+   <!-- Latest compiled and minified CSS -->
+   <link rel="stylesheet" href="css/bootstrap.min.css">
+
+   <!-- Optional theme -->
+   <link rel="stylesheet" href="css/bootstrap-theme.min.css">
+</head>
 <body>
-<form action="">
+
+   <div id="content">
+<div>
+<tr>
+	<th>Course</th>
+	<td>
+		<select class="course_select" name="course_code" >
+			{% for course in courses %} }
+				<option value={{course}}>{{course}}</option>
+			{% end %}
+		</select>
+	</td>
+</tr>
+</div>
+<div class="section" style="display: none;">
+	<td>
+		<select class="course_section" name="course_code" >
+		</select>
+	</td>
+</div>
+<div class="feedback" style="display: none;">
+<form>
     <table>
         <tr>
             <th>Student Number</th>
             <td><input type='number' value='stnum'></td>
         </tr>
+
         <tr>
             <th>TA Section</th>
             <td>
@@ -42,7 +73,7 @@
         </tr>
         <tr>
             <th>Feedback about the TA</th>
-            <td><input type=textarea' rows=10 cols=100 value='taFeedback'></td>
+            <td><input type='textarea' rows=10 cols=100 value='taFeedback'></td>
         </tr>
          <tr>
             <th>Feedback about the course</th>
@@ -55,5 +86,18 @@
         </tr>
     <table>
 </form>
+</div>
+</div>
+
+<div id="footer">
+	<!--{%block footer%}{%end %}-->
+</div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.js"></script>
+<!-- Latest compiled and minified JavaScript -->
+<script src="js/feedback.js"></script>
+<!--{% block scripts%}
+{% end %}-->
 </body>
-<html>
+</html>
