@@ -4,24 +4,23 @@ $( ".course_select" ).change(function() {
 		   coursecode : $(".course_select").val()
        },
        function(data, status){
-		   var sections_select = $(".section_select");
+		   var sections_list = $(".sections_list");
 	   		data = $.parseJSON(data);
 		   for(let time of data.results){
-			   sections_select.append(time);
-    			sections_select.append($("<input type=\"radio\" name=\"section\"/>").val(time));
-				sections_select.append("<br>");
+			   sections_list.append(time);
+    			sections_list.append($("<input class=\"section_select\"type=\"radio\" name=\"section\" value=\""+time+"\" />"));
+				sections_list.append("<br>");
 			}
 
 			$('#course_code').val($(".course_select").val());
 			$('.section').show();
        });
 });
-$( ".section_select").change(function() {
-	if($(".section_select").val() != "None" ){
+$(document.body).on('change','.section',function() {
+	alert();
+	if ($("input[name='section']").is(':checked')) {
+		alert($("input[name='section']:checked").val());
 		$('.feedback').show();
-		$('#section_code').val($(".section_select").val());
-	} else {
-		$('#section_code').val("");
-		// Else show some error(?)
+		$('#section_code').val($("input[name='section']:checked").val());
 	}
 });

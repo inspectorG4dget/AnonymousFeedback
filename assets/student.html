@@ -3,7 +3,6 @@
 <head>
 <title>Anonymous Feedback</title>
 
-
 <!-- Latest compiled and minified CSS -->
 
 <!-- Optional theme -->
@@ -20,16 +19,16 @@
 			</select>
 		</div>
 		<div class="section" style="display: none;">
-			<div class="section_select" name="course_code"></div>
+			<div class="sections_list" ></div>
 		</div>
 		<div class="feedback" style="display: none;">
 			<form method="POST" action="/submitFeedBack">
 				<table>
-					<input id="section_code" type="hidden"/>
-					<input id="course_code" type="hidden"/>
+					<input id="section_code" name="section_code" type="hidden"/>
+					<input id="course_code" name="course_code" type="hidden"/>
 					<tr>
 						<th>Student Number</th>
-						<td><input type='number' value='stnum'/></t>
+						<td><input type='number' name="studnum" value='stnum'/></t>
 					</tr>
 					<tr>
 						<th>How often was the TA prepared?</th><td>
@@ -63,11 +62,11 @@
 					</tr>
 					<tr>
 						<th>Feedback about the TA</th>
-						<td><textarea rows=10 cols=30 value='taFeedback'></textarea></td>
+						<td><textarea rows=10 cols=30 name='taFeedback'></textarea></td>
 					</tr>
 					<tr>
 						<th>Feedback about the course</th>
-						<td><textarea rows=10 cols=30 value='courseFeedback'></textarea></td>
+						<td><textarea rows=10 cols=30 name='courseFeedback'></textarea></td>
 					</tr>
 				</table>
 				<input type='submit' value='Submit' />
