@@ -8,8 +8,8 @@
 import tornado.ioloop   #Basic imports for the tornado library
 import tornado.web      #
 import dbhandler
+import json
 
-from tornado.escape import json_encode
 
 class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
@@ -46,9 +46,9 @@ class CourseRequestHandler(tornado.web.RequestHandler):
 
     def post(self):
         code=self.get_argument("coursecode")
-        print [k for k in self.request.arguments]
         results = dbhandler.getSections(code)
-        self.write(json_encode(results))
+        print json.dumps({"results":results})
+        self.write(json.dumps({"results":results}))
         self.finish()
 
 ####

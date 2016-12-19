@@ -1,103 +1,84 @@
 <!DOCTYPE html>
 <html>
 <head>
-   <title>Anonymous Feedback</title>
+<title>Anonymous Feedback</title>
 
 
-   <!-- Latest compiled and minified CSS -->
-   <link rel="stylesheet" href="css/bootstrap.min.css">
+<!-- Latest compiled and minified CSS -->
 
-   <!-- Optional theme -->
-   <link rel="stylesheet" href="css/bootstrap-theme.min.css">
+<!-- Optional theme -->
 </head>
 <body>
 
-   <div id="content">
-<div>
-<tr>
-	<th>Course</th>
-	<td>
-		<select class="course_select" name="course_code" >
-			{% for course in courses %} }
-				<option value={{course}}>{{course}}</option>
-			{% end %}
-		</select>
-	</td>
-</tr>
-</div>
-<div class="section" style="display: none;">
-	<td>
-		<select class="course_section" name="course_code" >
-		</select>
-	</td>
-</div>
-<div class="feedback" style="display: none;">
-<form>
-    <table>
-        <tr>
-            <th>Student Number</th>
-            <td><input type='number' value='stnum'></td>
-        </tr>
+	<div id="content">
+		<div class="course">
+			<h3>Course</h3>
+			<select class="course_select" name="course_code">
+				{% for course in courses %} a
+					<option value={{course}}>{{course}}</option>
+				{% end %}
+			</select>
+		</div>
+		<div class="section" style="display: none;">
+			<div class="section_select" name="course_code"></div>
+		</div>
+		<div class="feedback" style="display: none;">
+			<form method="POST" action="/submitFeedBack">
+				<table>
+					<input id="section_code" type="hidden"/>
+					<input id="course_code" type="hidden"/>
+					<tr>
+						<th>Student Number</th>
+						<td><input type='number' value='stnum'/></t>
+					</tr>
+					<tr>
+						<th>How often was the TA prepared?</th><td>
+						<select name="range_1">
+							<option value=1> Never          </option>
+							<option value=2> Sometimes      </option>
+							<option value=3> Usually        </option>
+							<option value=4> Almost Always  </option>
+							<option value=5> Always         </option>
+						</select></td>
+					</tr>
+					<tr>
+						<th>How well does the TA know the subject material?</th><td>
+						<select name="range_2">
+							<option value=1>Not at all          </option>
+							<option value=2>Slacking Knownledge </option>
+							<option value=3>Knows enough        </option>
+							<option value=4>Knows the material  </option>
+							<option value=5>Expert              </option>
+						</select></td>
+					</tr>
+					<tr>
+						<th>How relevant was lab/DGD material to class?</th>
+						<td><select name="range_3">
+							<option value=1>Not at all</option>
+							<option value=2>A little</option>
+							<option value=3>Sees some content</option>
+							<option value=4>Sees most content</option>
+							<option value=5>Perfect for content</option>
+						</select></td>
+					</tr>
+					<tr>
+						<th>Feedback about the TA</th>
+						<td><textarea rows=10 cols=30 value='taFeedback'></textarea></td>
+					</tr>
+					<tr>
+						<th>Feedback about the course</th>
+						<td><textarea rows=10 cols=30 value='courseFeedback'></textarea></td>
+					</tr>
+				</table>
+				<input type='submit' value='Submit' />
 
-        <tr>
-            <th>TA Section</th>
-            <td>
-                <select>
-                    <option value=1> Monday 11.30 - 14.30   </option>
-                    <option value=2> Tuesday 11.30 - 14.30  </option>
-                    <option value=3> Wednesday 11.30 - 14.30</option>
-                    <option value=4> Thursdday 11.30 - 14.30</option>
-                    <option value=5> Friday 11.30 - 14.30   </option>
-                </select>
-            </td>
-        </tr>
-        <tr>
-            <th>How often was the TA prepared?</th>
-            <td>
-                 <select>
-                    <option value=1> Never          </option>
-                    <option value=2> Sometimes      </option>
-                    <option value=3> Usually        </option>
-                    <option value=4> Almost Always  </option>
-                </select>
-            </td>
-        </tr>
-        <tr>
-            <th>How well does the TA know the subject material?</th>
-            <td>
-                    <option value=1>Not at all          </option>
-                    <option value=2>Knows enough        </option>
-                    <option value=3>Knows the material  </option>
-                    <option value=4>Expert              </option>
-            </td>
-        </tr>
-        <tr>
-            <th>Feedback about the TA</th>
-            <td><input type='textarea' rows=10 cols=100 value='taFeedback'></td>
-        </tr>
-         <tr>
-            <th>Feedback about the course</th>
-            <td><input type='textarea' rows=10 cols=100 value='courseFeedback'></td>
-        </tr>
-        <tr>
-            <td colspan=2>
-                <input type='submit' value='Submit' />
-            </td>
-        </tr>
-    <table>
-</form>
-</div>
-</div>
-
-<div id="footer">
-	<!--{%block footer%}{%end %}-->
-</div>
-
-
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.js"></script>
-<!-- Latest compiled and minified JavaScript -->
-<script src="js/feedback.js"></script>
-<!--{% block scripts%}
-{% end %}-->
+			</form>
+		</div>
+	</div>
+	<div id="footer">
+	</div>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.js"></script>
+	<script src="js/feedback.js"></script>
+	<!-- Latest compiled and minified JavaScript -->
 </body>
 </html>

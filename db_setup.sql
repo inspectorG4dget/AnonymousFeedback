@@ -22,17 +22,16 @@ CREATE TABLE section
 
 CREATE TABLE ta(  studnum character varying(10) NOT NULL,  fn character varying,  ln character varying,  profilepic character varying,  CONSTRAINT ta_pkey PRIMARY KEY (studnum),);
 
-CREATE TABLE teaches(  studnum character varying(10) NOT NULL,  sectionid uuid NOT NULL,  CONSTRAINT teaches_sectionid_fkey FOREIGN KEY (sectionid)      REFERENCES section (sectionid) MATCH SIMPLE      ON UPDATE NO ACTION ON DELETE NO ACTION,  CONSTRAINT teaches_taid_fkey FOREIGN KEY (studnum)      REFERENCES ta (studnum) MATCH SIMPLE      ON UPDATE NO ACTION ON DELETE NO ACTION);
+CREATE TABLE teaches(  studnum character varying(10) NOT NULL,  sectionid uuid NOT NULL,  PRIMARY KEY (studnum,sectionid),  CONSTRAINT teaches_sectionid_fkey FOREIGN KEY (sectionid)      REFERENCES section (sectionid) MATCH SIMPLE      ON UPDATE NO ACTION ON DELETE NO ACTION,  CONSTRAINT teaches_taid_fkey FOREIGN KEY (studnum)      REFERENCES ta (studnum) MATCH SIMPLE      ON UPDATE NO ACTION ON DELETE NO ACTION);
 
 CREATE TABLE feedback
 (
-  manyfield character varying,
+  range_fields integer ARRAY,
   comments character varying,
   stud character varying(20) NOT NULL,
-  feedbackid uuid NOT NULL DEFAULT gen_random_uuid(),
   sectionid uuid NOT NULL,
-  CONSTRAINT feedback_pkey PRIMARY KEY (feedbackid),
-  CONSTRAINT feedback_sectionid_fkey FOREIGN KEY (sectionid)
-      REFERENCES section (sectionid) MATCH SIMPLE
-      ON UPDATE NO ACTION ON DELETE NO ACTION
+  FOREIGN KEY (sectionid)
+      REFERENCES section (sectionid),
+   PRIMARY KEY (stud,sectionid)
+
 );
