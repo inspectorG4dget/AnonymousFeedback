@@ -1,23 +1,59 @@
 <html>
-<head> </head>
-
+<head>
+	<title>FeedBack Management</title>
+	<link rel="stylesheet" href="css/styles.css">
+</head>
 <body>
-<form action="">
-    <table>
-        <tr>
-            <th>Course Code</th>
-            <td></td>
-        </tr>
-        <tr>
-            <th>TA Name</th>
-            <td></td>
-        </tr>
-        <tr>
-            <td colspan=2>
-                <input type='submit' value='Submit' />
-            </td>
-        </tr>
-    <table>
-</form>
+<div class="action_select">
+	<select class="action_selecter" name="action">
+		<option value='0'	>None</option>
+		<option value='1'	>View feedback</option>
+		<option value='2'	>Add Course   </option>
+		<option value='3'	>Add Section  </option>
+		<option value='4'	>Add Table	  </option>
+		<option value='5'	>Assign TA    </option>
+	</select>
+</div>
+<div class="tool_bar">
+	<div class="feedback_tools" style="display: none;">
+		<form class="feedback" method="post">
+			<select class="course_selecter" name="course">
+			</select>
+			<select class="sections_list" name="section">
+			</select>
+			<input type='submit' value='Submit' />
+		</form>
+	</div>
+
+
+	<div class="course_tools" style="display: none;">
+		<form class="course"  method="post">
+				<!-- TODO :  Input for creating new course code-->
+			<input type='submit' value='Submit' />
+		</form>
+	</div>
+
+
+	<div class="section_tools" style="display: none;">
+		<!-- TODO :  Input for creating new section based on courses-->
+	</div>
+
+	<div class="ta_tools" style="display: none;">
+		<!-- TODO :  Input for creating new  TA profile-->
+
+	</div>
+
+	<div class="assign_tools" style="display: none;">
+		<!-- TODO :  Select course  than section than ta-->
+	</div>
+</div>
+<div class="data_view" style="display: none;">
+	<!-- TODO: Make a table view -->
+	<table class="data_table">
+
+	</table>
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.js"></script>
+<script src="js/manage.js"></script>
 </body>
-<html>
+</html>

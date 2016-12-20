@@ -13,6 +13,7 @@
 		<div class="course">
 			<h3>Course</h3>
 			<select class="course_select" name="course_code">
+				<option value="None">None</option>
 				{% for course in courses %} a
 					<option value={{course}}>{{course}}</option>
 				{% end %}
@@ -22,7 +23,7 @@
 			<div class="sections_list" ></div>
 		</div>
 		<div class="feedback" style="display: none;">
-			<form method="POST" action="/submitFeedBack">
+			<form class="feedback_form" method="POST" action="/submitFeedBack">
 				<table>
 					<input id="section_code" name="section_code" type="hidden"/>
 					<input id="course_code" name="course_code" type="hidden"/>
