@@ -19,36 +19,26 @@ class BaseHandler(tornado.web.RequestHandler):
 class MainHandler(BaseHandler):
     def get(self):
         courses= dbhandler.getCourses()
-        print courses
         courses_u = [str(k[0]) for k in courses]
-        print courses_u
-        # Information fed to make the page dynamic
         self.render("assets/student.html",courses=courses_u )
 
 class ProfHandler(BaseHandler):
     def get(self):
         self.write('<html><body> <p>making this soon</p></body></html>')
 
-    def post(self):
-        self.set_secure_cookie("user", self.get_argument("name"))
-        self.set_cookie("guestviewer", "true")
-        self.redirect("/")
-
-        #self.set_secure_cookie("user", self.get_argument("name"))
-        #self.set_cookie("guestviewer", "true")
-        #self.redirect("/")
-
 class CourseRequestHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
-    def get(self):
-        self.write("{\"yo\" : \"hi get\" }")
-        self.finish()
-
     def post(self):
         code=self.get_argument("coursecode")
         results = dbhandler.getSections(code)
-        print json.dumps({"results":results})
         self.write(json.dumps({"results":results}))
+        self.finish()
+
+class FeedbackRequestHandler(tornado.web.RequestHandler):
+    @tornado.web.asynchronous
+    def post(self):
+        dbhandler.submitFeedback(self.request.arguments)
+        self.write('{success}')
         self.finish()
 
 ####
@@ -60,6 +50,7 @@ class CourseRequestHandler(tornado.web.RequestHandler):
 application = tornado.web.Application(
     [
     (r'/',              MainHandler),
+    (r'/submitFeedBack',FeedbackRequestHandler),
     (r'/course',        CourseRequestHandler),
     (r'/(favicon.ico)', tornado.web.StaticFileHandler, {'path': 'assets/'        }),
     (r'/images/(.*)',   tornado.web.StaticFileHandler, {'path': 'assets/images/' }),
