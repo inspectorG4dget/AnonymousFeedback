@@ -1,5 +1,8 @@
 import pg8000
 
+from datetime import datetime as dt
+
+
 conn = pg8000.connect(host="127.0.0.1", port=5432,user="feed", password="meh", database="feedback")
 
 def getCourses():
@@ -9,19 +12,22 @@ def getCourses():
 	#inserted new user
 	return t.fetchall()
 
-def getSections(code):
+
+def getSections(courseCode, year, semester):
 	t=conn.cursor()
-	t.execute("""SELECT * FROM course;""")
+	t.execute("""SELECT sectionID, startTime, endTime FROM section WHERE course=%s AND year=%d AND semester=%d;""", (courseCode, year, semester))
 	conn.commit()
-	a = t.fetchall()
-	x =[str(k[0]) for k in a]
-	if code in x:
-		t=conn.cursor()
-		t.execute("""SELECT timeslot FROM section WHERE code=%s;""",(str(code),))
-		conn.commit()
-		return t.fetchall()
-	#inserted new user
-	return False
+	return t.fetchall()
+
+
+def getSectionTA(courseCode, sectionCode, year, semester):
+    query = "SELECT ta, firstName, lastName FROM TA JOIN TEACHES WHERE TA.stnum=TEACHES.ta AND TEACHES.course=%s AND TEACHES.section=%s AND TEACHES.year=%s AND TEACHES.semester=%s"
+    
+    t = conn.cursor()
+    t.execute(query, (courseCode, sectionCode, year, semester))
+    conn.commit()
+    return t.fetchall()
+
 
 def submitFeedback(form):
 	t=conn.cursor()

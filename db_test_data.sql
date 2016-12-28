@@ -8,16 +8,15 @@ INSERT INTO ta(studnum, fn, ln, profilepic) VALUES
 ('3','Balmer','Peak','MSlogo.png'),
 ('4','Remi','Gel','Rems.png');
 
-INSERT INTO section(sectionid, code,timeslot) VALUES
-('fdf39a4f-5b0e-4a1a-897f-af3119e97712','ITI1120','Meh oclock'),
-('2732a472-f644-42a2-aa41-f785aeccb50c','ITI1120','Oh lord its late'),
-('d932c0c3-7be8-4ac3-98a1-a89c34e1a470','ITI1121','DFS hour'),
-('48be0083-ad05-420f-b745-d5c9338768a1','ITI1121','Its to O-O-ly for this');
+INSERT INTO section(course, sectionID, weekday, startTime, endTime) VALUES
+('ITI1120', 'T1', '1', '11:30', '14:30'),
+('ITI1120', 'T2', '2', '14:30', '17:30'),
+('ITI1121', 'T1', '1', '11:30', '14:30'),
+('ITI1121', 'T2', '2', '14:30', '17:30');
 
 
-
-INSERT INTO teaches(sectionid, studnum) VALUES
-('fdf39a4f-5b0e-4a1a-897f-af3119e97712','1'),
-('2732a472-f644-42a2-aa41-f785aeccb50c','2'),
-('d932c0c3-7be8-4ac3-98a1-a89c34e1a470','3'),
-('48be0083-ad05-420f-b745-d5c9338768a1','4');
+INSERT INTO teaches(ta, course, section, year, semester) VALUES
+('1', 'ITI1120', 'T1', '2016', '3'),
+('2', 'ITI1120', 'T2', '2016', '3'),
+('1', 'ITI1121', 'T2', '2017', '1'),
+('3', 'ITI1121', 'T1', '2017', '1');

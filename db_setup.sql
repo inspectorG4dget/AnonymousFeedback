@@ -15,6 +15,7 @@ CREATE TABLE SECTION (
     sectionID   VARCHAR(2),
     year        NUMERIC(4),
     semester    NUMERIC(1),
+    weekday     NUMERIC(1),
     startTime   TIME,
     endTime     TIME,
 
