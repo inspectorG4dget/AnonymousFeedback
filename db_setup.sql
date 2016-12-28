@@ -3,35 +3,97 @@ CREATE DATABASE feedback;
 CREATE EXTENSION pgcrypto;
 
 use feedback;
-CREATE TABLE course
-(
-  code character varying(7),
-  CONSTRAINT course_pkey PRIMARY KEY (code)
+
+CREATE TABLE COURSE (
+    code    VARCHAR(7),
+    PRIMARY KEY (code)
 );
 
-CREATE TABLE section
-(
-  code character varying(7) NOT NULL,
-  sectionid uuid NOT NULL DEFAULT gen_random_uuid(),
-  timeslot character varying,
-  CONSTRAINT section_pkey PRIMARY KEY (sectionid),
-  CONSTRAINT section_code_fkey FOREIGN KEY (code)
-      REFERENCES course (code) MATCH SIMPLE
-      ON UPDATE NO ACTION ON DELETE NO ACTION
+
+CREATE TABLE SECTION (
+    course      VARCHAR(7),
+    sectionID   VARCHAR(2),
+    year        NUMERIC(4),
+    semester    NUMERIC(1),
+    startTime   TIME,
+    endTime     TIME,
+
+    FOREIGN KEY (course) REFERENCES COURSE(code)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    
+    PRIMARY KEY (course, sectionID, year, semester)
 );
 
-CREATE TABLE ta(  studnum character varying(10) NOT NULL,  fn character varying,  ln character varying,  profilepic character varying,  CONSTRAINT ta_pkey PRIMARY KEY (studnum),);
 
-CREATE TABLE teaches(  studnum character varying(10) NOT NULL,  sectionid uuid NOT NULL,  PRIMARY KEY (studnum,sectionid),  CONSTRAINT teaches_sectionid_fkey FOREIGN KEY (sectionid)      REFERENCES section (sectionid) MATCH SIMPLE      ON UPDATE NO ACTION ON DELETE NO ACTION,  CONSTRAINT teaches_taid_fkey FOREIGN KEY (studnum)      REFERENCES ta (studnum) MATCH SIMPLE      ON UPDATE NO ACTION ON DELETE NO ACTION);
+CREATE TABLE TA (
+    stnum       NUMERIC(10),
+    firstName   VARCHAR(20),
+    lastName    VARCHAR(20),
+    profilePic  VARCHAR(100)
+);
 
-CREATE TABLE feedback
-(
-  range_fields integer ARRAY,
-  comments character varying,
-  stud character varying(20) NOT NULL,
-  sectionid uuid NOT NULL,
-  FOREIGN KEY (sectionid)
-      REFERENCES section (sectionid),
-   PRIMARY KEY (stud,sectionid)
 
+CREATE TABLE TEACHES (
+    ta          NUMERIC(10),
+    course      VARCHAR(7),
+    section     VARCHAR(2),
+    year        NUMERIC(4),
+    semester    NUMERIC(1),
+
+    FOREIGN KEY (ta) REFERENCES TA(stnum)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+
+    FOREIGN KEY(course) REFERENCES COURSE(code)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+
+    FOREIGN KEY(section) REFERENCES SECTION(sectionID)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+
+    FOREIGN KEY(year) REFERENCES SECTION(year)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+
+    FOREIGN KEY(semester) REFERENCES SECTION(semester)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+
+
+    PRIMARY KEY(ta, course, section, year, semester)
+);
+
+
+CREATE TABLE FEEDBACK (
+    student     NUMERIC(10), 
+    ta          NUMERIC(10),
+    course      VARCHAR(7),
+    section     VARCHAR(1),
+    year        NUMERIC(4),
+    semester    NUMERIC(1),
+    feedback    VARCHAR,
+
+    FOREIGN KEY (ta) REFERENCES TA (stnum)
+        ON DELETE DO NOTHING
+        ON UPDATE CASCADE,
+
+    FOREIGN KEY (course) REFERENCES SECTION(course)
+        ON DELETE DO NOTHING
+        ON UPDATE CASCADE,
+
+    FOREIGN KEY (section) REFERENCES SECTION(sectionID)
+        ON DELETE DO NOTHING
+        ON UPDATE CASCADE,
+
+    FOREIGN KEY (year) REFERENCES SECTION(year)
+        ON DELETE DO NOTHING
+        ON UPDATE CASCADE,
+
+    FOREIGN KEY (semester) REFERENCES SECTION(semester)
+        ON DELETE DO NOTHING
+        ON UPDATE CASCADE,
+
+    PRIMARY KEY (student, ta, course, section, year, semester)
 );
