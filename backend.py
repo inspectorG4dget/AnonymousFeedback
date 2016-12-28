@@ -5,8 +5,8 @@
 # Version : v0.1
 #####
 
-import tornado.ioloop   #Basic imports for the tornado library
-import tornado.web      #
+import tornado.ioloop
+import tornado.web
 import dbhandler
 import json
 
@@ -15,18 +15,40 @@ class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
         return self.get_secure_cookie("user")
 
+class MainHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.render("assets/index.html")
 
-class MainHandler(BaseHandler):
+class FeedBackHandler(tornado.web.RequestHandler):
     def get(self):
         courses= dbhandler.getCourses()
         courses_u = [str(k[0]) for k in courses]
         self.render("assets/student.html",courses=courses_u )
 
-class ProfHandler(BaseHandler):
+class ManageHandler(tornado.web.RequestHandler):
     def get(self):
-        self.write('<html><body> <p>making this soon</p></body></html>')
+        self.render("assets/professor.html")
 
-class CourseRequestHandler(tornado.web.RequestHandler):
+####
+# Used for AJAX POST requests
+####
+
+class SubmitFeedbackHandler(tornado.web.RequestHandler):
+    @tornado.web.asynchronous
+    def post(self):
+        dbhandler.submitFeedback(self.request.arguments)
+        self.write('{success}')
+        self.finish()
+
+class GetCoursesHandler(tornado.web.RequestHandler):
+    @tornado.web.asynchronous
+    def post(self):
+        courses= dbhandler.getCourses()
+        courses_u = [str(k[0]) for k in courses]
+        self.write(json.dumps({"results":courses_u}))
+        self.finish()
+
+class GetSectionsHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
     def post(self):
         code=self.get_argument("coursecode")
@@ -34,12 +56,34 @@ class CourseRequestHandler(tornado.web.RequestHandler):
         self.write(json.dumps({"results":results}))
         self.finish()
 
-class FeedbackRequestHandler(tornado.web.RequestHandler):
+class ViewFeedbackHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
     def post(self):
-        dbhandler.submitFeedback(self.request.arguments)
-        self.write('{success}')
+        x = dbhandler.getFeedBack(self.request.arguments)
+        self.write(json.dumps(x))
         self.finish()
+
+class AddCourseHandler(tornado.web.RequestHandler):
+    @tornado.web.asynchronous
+    def post(self):
+        dbhandler.createCourse(self.request.arguments)
+
+class AddSectionHandler(tornado.web.RequestHandler):
+    @tornado.web.asynchronous
+    def post(self):
+        dbhandler.createSection(self.request.arguments)
+
+
+class AddTAHandler(tornado.web.RequestHandler):
+    @tornado.web.asynchronous
+    def post(self):
+        dbhandler.createTA(self.request.arguments)
+
+class AssignTAHandler(tornado.web.RequestHandler):
+    @tornado.web.asynchronous
+    def post(self):
+        dbhandler.getFeedBack(self.request.arguments)
+
 
 ####
 # Tornado uses 'handlers' to take care of requests to certain URLs
@@ -50,8 +94,18 @@ class FeedbackRequestHandler(tornado.web.RequestHandler):
 application = tornado.web.Application(
     [
     (r'/',              MainHandler),
-    (r'/submitFeedBack',FeedbackRequestHandler),
-    (r'/course',        CourseRequestHandler),
+    (r'/feedback',      FeedBackHandler),
+    (r'/manage',        ManageHandler),
+    # asynchronous API end poins
+    (r'/submitFeedBack',SubmitFeedbackHandler),
+    (r'/getSections',   GetSectionsHandler),
+    (r'/getCourses',    GetCoursesHandler),
+    (r'/addCourse',     AddCourseHandler),
+    (r'/addSection',    AddSectionHandler),
+    (r'/addTA',         AddTAHandler),
+    (r'/assignTA',      AssignTAHandler),
+    (r'/viewFeedBack',  ViewFeedbackHandler),
+    # Static asset handlers
     (r'/(favicon.ico)', tornado.web.StaticFileHandler, {'path': 'assets/'        }),
     (r'/images/(.*)',   tornado.web.StaticFileHandler, {'path': 'assets/images/' }),
     (r'/fonts/(.*)',    tornado.web.StaticFileHandler, {'path': 'assets/fonts/'  }),

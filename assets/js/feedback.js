@@ -1,5 +1,9 @@
 $( ".course_select" ).change(function() {
-    $.post("/course",{ coursecode : $(".course_select").val() },
+    if($(".course_select").val() == "None") {
+        $('.sections_list').html('');
+        return;
+    }
+    $.post("/getSections",{ coursecode : $(".course_select").val() },
         function(data, status){
             var sections_list = $(".sections_list");
             $('#section_code').val("");
@@ -20,3 +24,10 @@ $(document.body).on('change','.section',function() {
         $('#section_code').val($("input[name='section']:checked").val());
     }
 });
+
+/*$('.feedback_form').on('submit',function(event){
+        event.preventDefault() ;
+        alert("Form Submission stoped.");
+        //TODO: Make AJAX
+        //TODO: Handle success properly
+});*/
