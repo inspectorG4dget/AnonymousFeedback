@@ -12,7 +12,7 @@ CREATE TABLE COURSE (
 
 CREATE TABLE SECTION (
     course      VARCHAR(7),
-    sectionID   VARCHAR(1),
+    sectionID   VARCHAR(2),
     year        NUMERIC(4),
     semester    NUMERIC(1),
     startTime   TIME,
@@ -35,9 +35,9 @@ CREATE TABLE TA (
 
 
 CREATE TABLE TEACHES (
-    ta          NUMERIC(10),  -- TODO: FK
+    ta          NUMERIC(10),
     course      VARCHAR(7),
-    section     VARCHAR(1),
+    section     VARCHAR(2),
     year        NUMERIC(4),
     semester    NUMERIC(1),
 
@@ -62,7 +62,7 @@ CREATE TABLE TEACHES (
         ON DELETE CASCADE,
 
 
-    PRIMARY KEY(ta, course, section , year, semester)
+    PRIMARY KEY(ta, course, section, year, semester)
 );
 
 
