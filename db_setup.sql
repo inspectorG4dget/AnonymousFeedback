@@ -13,16 +13,17 @@ CREATE TABLE COURSE (
 CREATE TABLE SECTION (
     course      VARCHAR(7),
     sectionID   VARCHAR(2),
-    year        NUMERIC(4),
+    currYear    NUMERIC(4),
     semester    NUMERIC(1),
+	weekday NUMERIC(1),
     startTime   TIME,
     endTime     TIME,
 
     FOREIGN KEY (course) REFERENCES COURSE(code)
         ON DELETE CASCADE
         ON UPDATE CASCADE,
-    
-    PRIMARY KEY (course, sectionID, year, semester)
+
+    PRIMARY KEY (course, sectionID, currYear, semester)
 );
 
 
@@ -30,22 +31,23 @@ CREATE TABLE TA (
     stnum       NUMERIC(10),
     firstName   VARCHAR(20),
     lastName    VARCHAR(20),
-    profilePic  VARCHAR(100)
+    profilePic  VARCHAR(100),
+    PRIMARY KEY (stnum)
 );
 
 
 CREATE TABLE TEACHES (
-    ta          NUMERIC(10),
+    taID          NUMERIC(10),
     course      VARCHAR(7),
     section     VARCHAR(2),
-    year        NUMERIC(4),
+    currYear     NUMERIC(4),
     semester    NUMERIC(1),
 
-    FOREIGN KEY (ta) REFERENCES TA(stnum)
+    FOREIGN KEY (taID) REFERENCES TA(stnum)
         ON UPDATE CASCADE
         ON DELETE CASCADE,
 
-    FOREIGN KEY(course) REFERENCES COURSE(code)
+    FOREIGN KEY(course) REFERENCES SECTION(course)
         ON UPDATE CASCADE
         ON DELETE CASCADE,
 
@@ -53,7 +55,7 @@ CREATE TABLE TEACHES (
         ON UPDATE CASCADE
         ON DELETE CASCADE,
 
-    FOREIGN KEY(year) REFERENCES SECTION(year)
+    FOREIGN KEY(currYear) REFERENCES SECTION(currYear)
         ON UPDATE CASCADE
         ON DELETE CASCADE,
 
@@ -62,38 +64,38 @@ CREATE TABLE TEACHES (
         ON DELETE CASCADE,
 
 
-    PRIMARY KEY(ta, course, section, year, semester)
+    PRIMARY KEY(taID, course, section, currYear, semester)
 );
 
 
 CREATE TABLE FEEDBACK (
-    student     NUMERIC(10), 
-    ta          NUMERIC(10),
+    student     NUMERIC(10),
+    taID        NUMERIC(10),
     course      VARCHAR(7),
-    section     VARCHAR(1),
-    year        NUMERIC(4),
+    section     VARCHAR(2),
+    currYear        NUMERIC(4),
     semester    NUMERIC(1),
     feedback    VARCHAR,
 
-    FOREIGN KEY (ta) REFERENCES TA (stnum)
-        ON DELETE DO NOTHING
+    FOREIGN KEY (taID) REFERENCES TA (stnum)
+        ON DELETE NO ACTION
         ON UPDATE CASCADE,
 
     FOREIGN KEY (course) REFERENCES SECTION(course)
-        ON DELETE DO NOTHING
+        ON DELETE NO ACTION
         ON UPDATE CASCADE,
 
     FOREIGN KEY (section) REFERENCES SECTION(sectionID)
-        ON DELETE DO NOTHING
+        ON DELETE NO ACTION
         ON UPDATE CASCADE,
 
-    FOREIGN KEY (year) REFERENCES SECTION(year)
-        ON DELETE DO NOTHING
+    FOREIGN KEY (currYear) REFERENCES SECTION(currYear)
+        ON DELETE NO ACTION
         ON UPDATE CASCADE,
 
     FOREIGN KEY (semester) REFERENCES SECTION(semester)
-        ON DELETE DO NOTHING
+        ON DELETE NO ACTION
         ON UPDATE CASCADE,
 
-    PRIMARY KEY (student, ta, course, section, year, semester)
+    PRIMARY KEY (student, taID, course, section, currYear, semester)
 );
