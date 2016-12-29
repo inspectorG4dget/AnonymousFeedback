@@ -1,10 +1,19 @@
+import ConfigParser as CP
 import operator
 import pg8000
 
 from datetime import datetime as dt
 from backend import getYearSemester
 
-conn = pg8000.connect(host="127.0.0.1", port=5432,user="feedback", password="meh", database="ashwin")
+config = CP.RawConfigParser()
+config.read('dbconn.conf')
+ip = config.get("Default", "IP")
+port = config.getint("Default", "port")
+username = config.get("Default", "user")
+pwd = config.get("Default", "password")
+db = config.get("Default", "database")
+
+conn = pg8000.connect(host=ip, port=port,user=username, password=pwd, database=db)
 
 def getCourses():
     t=conn.cursor()

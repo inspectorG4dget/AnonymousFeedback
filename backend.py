@@ -69,6 +69,7 @@ class GetSectionsHandler(tornado.web.RequestHandler):
 
         results = list(dbhandler.getSections(code, year, semester))
         for i, (sectionID, weekday, startTime, endTime) in enumerate(results):
+            results[i][1] = str(weekday)
             results[i][2] = startTime.strftime("%H:%M")
             results[i][3] = endTime.strftime("%H:%M")
 
