@@ -93,7 +93,8 @@ def getFeedBack(form):
 
 def submitFeedback(feedbacks):
     query = """INSERT INTO FEEDBACK student=%s, course=%s, section=%s, currYear=%s, semester=%s, taID=%s, q1=%s, q2=%s, q3=%s, feedback=%s"""
-    idents = operator.itemgetter('student', 'course', 'section', 'currYear', 'semester')(feedbacks)
+    idents = operator.itemgetter('student', 'course', 'section')(feedbacks)
+    idents += getYearSemester()
 
     fetch = operator.itemgetter('taID', 'q1', 'q2', 'q3', 'feedback')
     for feedback in feedbacks['feedback']:
