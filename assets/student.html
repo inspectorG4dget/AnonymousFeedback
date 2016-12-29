@@ -1,3 +1,6 @@
+
+
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -24,54 +27,16 @@
 		</div>
 		<div class="feedback" style="display: none;">
 			<form class="feedback_form" method="POST" action="/submitFeedBack">
+				<input id="section_code" name="section_code" type="hidden"/>
+				<input id="course_code" name="course_code" type="hidden"/>
 				<table>
-					<input id="section_code" name="section_code" type="hidden"/>
-					<input id="course_code" name="course_code" type="hidden"/>
 					<tr>
 						<th>Student Number</th>
-						<td><input type='number' name="studnum" value='stnum'/></t>
-					</tr>
-					<tr>
-						<th>How often was the TA prepared?</th><td>
-						<select name="range_1">
-							<option value=1> Never          </option>
-							<option value=2> Sometimes      </option>
-							<option value=3> Usually        </option>
-							<option value=4> Almost Always  </option>
-							<option value=5> Always         </option>
-						</select></td>
-					</tr>
-					<tr>
-						<th>How well does the TA know the subject material?</th><td>
-						<select name="range_2">
-							<option value=1>Not at all          </option>
-							<option value=2>Slacking Knownledge </option>
-							<option value=3>Knows enough        </option>
-							<option value=4>Knows the material  </option>
-							<option value=5>Expert              </option>
-						</select></td>
-					</tr>
-					<tr>
-						<th>How relevant was lab/DGD material to class?</th>
-						<td><select name="range_3">
-							<option value=1>Not at all</option>
-							<option value=2>A little</option>
-							<option value=3>Sees some content</option>
-							<option value=4>Sees most content</option>
-							<option value=5>Perfect for content</option>
-						</select></td>
-					</tr>
-					<tr>
-						<th>Feedback about the TA</th>
-						<td><textarea rows=10 cols=30 name='taFeedback'></textarea></td>
-					</tr>
-					<tr>
-						<th>Feedback about the course</th>
-						<td><textarea rows=10 cols=30 name='courseFeedback'></textarea></td>
+						<td><input type='number' name="studnum" value='stnum'/></td>
 					</tr>
 				</table>
-				<input type='submit' value='Submit' />
-
+				<div class="fields">
+				</div>
 			</form>
 		</div>
 	</div>
