@@ -57,7 +57,7 @@ CREATE TABLE TEACHES (
 
 
 CREATE TABLE RANGE_QUESTIONS (
-    id              NUMERIC(1) SERIAL,
+    id              NUMERIC(5) SERIAL,
     description     VARCHAR(50),
 
     PRIMARY KEY (id)
@@ -72,9 +72,9 @@ CREATE TABLE FEEDBACK (
     currYear    NUMERIC(4),
     semester    NUMERIC(1),
 
-    q1          NUMERIC(1),
-    q2          NUMERIC(1),
-    q3          NUMERIC(1),
+    q1          NUMERIC(5),
+    q2          NUMERIC(5),
+    q3          NUMERIC(5),
     feedback    VARCHAR,
 
     FOREIGN KEY (taID) REFERENCES TA (stnum)
@@ -85,6 +85,18 @@ CREATE TABLE FEEDBACK (
     FOREIGN KEY(course,section,currYear,semester) REFERENCES SECTION(course,sectionID,currYear,semester)
         ON UPDATE CASCADE
         ON DELETE CASCADE,
+
+    FOREIGN KEY (q1) REFERENCES RANGE_QUESTIONS(id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+
+    FOREIGN KEY (q2) REFERENCES RANGE_QUESTIONS(id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+
+    FOREIGN KEY (q3) REFERENCES RANGE_QUESTIONS(id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
 
     PRIMARY KEY (student, taID, course, section, currYear, semester)
 );
