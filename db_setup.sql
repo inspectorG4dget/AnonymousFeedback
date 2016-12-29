@@ -63,14 +63,18 @@ CREATE TABLE FEEDBACK (
     FOREIGN KEY(course,section,currYear,semester) REFERENCES SECTION(course,sectionID,currYear,semester)
         ON UPDATE CASCADE
         ON DELETE CASCADE,
+
     FOREIGN KEY (q1) REFERENCES RANGE_QUESTIONS(id)
         ON DELETE CASCADE
         ON UPDATE CASCADE,
+
     FOREIGN KEY (q2) REFERENCES RANGE_QUESTIONS(id)
         ON DELETE CASCADE
         ON UPDATE CASCADE,
+
     FOREIGN KEY (q3) REFERENCES RANGE_QUESTIONS(id)
         ON DELETE CASCADE
         ON UPDATE CASCADE,
+
     PRIMARY KEY (student, taID, course, section, currYear, semester)
 );
