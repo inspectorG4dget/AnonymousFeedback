@@ -37,10 +37,10 @@ CREATE TABLE TA (
 
 
 CREATE TABLE TEACHES (
-    taID          NUMERIC(10),
+    taID        NUMERIC(10),
     course      VARCHAR(7),
     section     VARCHAR(2),
-    currYear     NUMERIC(4),
+    currYear    NUMERIC(4),
     semester    NUMERIC(1),
 
     FOREIGN KEY (taID) REFERENCES TA(stnum)
@@ -55,13 +55,26 @@ CREATE TABLE TEACHES (
     PRIMARY KEY(taID, course, section, currYear, semester)
 );
 
+
+CREATE TABLE RANGE_QUESTIONS (
+    id              NUMERIC(1) SERIAL,
+    description     VARCHAR(50),
+
+    PRIMARY KEY (id)
+);
+
+
 CREATE TABLE FEEDBACK (
     student     NUMERIC(10),
     taID        NUMERIC(10),
     course      VARCHAR(7),
     section     VARCHAR(2),
-    currYear        NUMERIC(4),
+    currYear    NUMERIC(4),
     semester    NUMERIC(1),
+
+    q1          NUMERIC(1),
+    q2          NUMERIC(1),
+    q3          NUMERIC(1),
     feedback    VARCHAR,
 
     FOREIGN KEY (taID) REFERENCES TA (stnum)

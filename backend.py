@@ -10,6 +10,8 @@ import tornado.web
 import dbhandler
 import json
 
+from datetime import datetime as dt
+
 
 class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
@@ -52,9 +54,32 @@ class GetSectionsHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
     def post(self):
         code=self.get_argument("coursecode")
-        results = dbhandler.getSections(code)
+
+        today = dt.today()
+        year = today.year
+        semester = today.month//4
+        results = dbhandler.getSections(code, year, semester)
         self.write(json.dumps({"results":results}))
         self.finish()
+
+
+class GetSectionTAHandler(tornado.web.RequestHandler):
+    @tornado.web.asynchronous
+    def post(self):
+        course = self.get_argument("course")
+        section = self.get_argument("section")
+
+        today = dt.today()
+        year = today.year
+        semester = today.month//4
+        results = dbhandler.getSectionTA(code, year, semester)
+        for i,(taID, fname, lname) in enumerate(results):
+            name = "%s %s" %(fname, lname)
+            results[i] = {"taID": taID, "name": name}
+
+        self.write(json.dumps({"TAs":results}))
+        self.finish()
+
 
 class ViewFeedbackHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
@@ -105,6 +130,7 @@ application = tornado.web.Application(
     (r'/addTA',         AddTAHandler),
     (r'/assignTA',      AssignTAHandler),
     (r'/viewFeedBack',  ViewFeedbackHandler),
+    (r'/getSectionTA',  GetSectionTAHandler),
     # Static asset handlers
     (r'/(favicon.ico)', tornado.web.StaticFileHandler, {'path': 'assets/'        }),
     (r'/images/(.*)',   tornado.web.StaticFileHandler, {'path': 'assets/images/' }),
