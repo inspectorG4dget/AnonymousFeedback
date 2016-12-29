@@ -1,8 +1,8 @@
-CREATE DATABASE feedback;
-
-CREATE EXTENSION pgcrypto;
-
-use feedback;
+DROP TABLE TEACHES;
+DROP TABLE FEEDBACK;
+DROP TABLE TA;
+DROP TABLE SECTION;
+DROP TABLE COURSE;
 
 CREATE TABLE COURSE (
     code    VARCHAR(7),
@@ -47,26 +47,13 @@ CREATE TABLE TEACHES (
         ON UPDATE CASCADE
         ON DELETE CASCADE,
 
-    FOREIGN KEY(course) REFERENCES SECTION(course)
-        ON UPDATE CASCADE
-        ON DELETE CASCADE,
-
-    FOREIGN KEY(section) REFERENCES SECTION(sectionID)
-        ON UPDATE CASCADE
-        ON DELETE CASCADE,
-
-    FOREIGN KEY(currYear) REFERENCES SECTION(currYear)
-        ON UPDATE CASCADE
-        ON DELETE CASCADE,
-
-    FOREIGN KEY(semester) REFERENCES SECTION(semester)
+    FOREIGN KEY(course,section,currYear,semester) REFERENCES SECTION(course,sectionID,currYear,semester)
         ON UPDATE CASCADE
         ON DELETE CASCADE,
 
 
     PRIMARY KEY(taID, course, section, currYear, semester)
 );
-
 
 CREATE TABLE FEEDBACK (
     student     NUMERIC(10),
@@ -81,21 +68,10 @@ CREATE TABLE FEEDBACK (
         ON DELETE NO ACTION
         ON UPDATE CASCADE,
 
-    FOREIGN KEY (course) REFERENCES SECTION(course)
-        ON DELETE NO ACTION
-        ON UPDATE CASCADE,
 
-    FOREIGN KEY (section) REFERENCES SECTION(sectionID)
-        ON DELETE NO ACTION
-        ON UPDATE CASCADE,
-
-    FOREIGN KEY (currYear) REFERENCES SECTION(currYear)
-        ON DELETE NO ACTION
-        ON UPDATE CASCADE,
-
-    FOREIGN KEY (semester) REFERENCES SECTION(semester)
-        ON DELETE NO ACTION
-        ON UPDATE CASCADE,
+    FOREIGN KEY(course,section,currYear,semester) REFERENCES SECTION(course,sectionID,currYear,semester)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
 
     PRIMARY KEY (student, taID, course, section, currYear, semester)
 );
