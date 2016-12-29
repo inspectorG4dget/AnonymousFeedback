@@ -16,16 +16,21 @@ def getCourses():
 
 def getSections(courseCode, year, semester):
     t=conn.cursor()
-    t.execute("""SELECT sectionID, startTime, endTime FROM section WHERE course=%s AND year=%d AND semester=%d;""", (courseCode, year, semester))
+    t.execute("""SELECT sectionID, startTime, endTime FROM section WHERE course=%s AND currYear=%s AND semester=%s;""", (courseCode, year, semester,))
     conn.commit()
     return t.fetchall()
 
 
 def getSectionTA(courseCode, sectionCode, year, semester):
-    query = "SELECT ta, firstName, lastName FROM TA JOIN TEACHES WHERE TA.stnum=TEACHES.ta AND TEACHES.course=%s AND TEACHES.section=%s AND TEACHES.year=%s AND TEACHES.semester=%s"
-    
+    print courseCode , sectionCode , year, semester
     t = conn.cursor()
-    t.execute(query, (courseCode, sectionCode, year, semester))
+    t.execute('''SELECT taID, firstName, lastName
+                FROM TA, TEACHES
+                WHERE TA.stnum=TEACHES.taID
+                    AND TEACHES.course=%s
+                    AND TEACHES.section=%s
+                    AND TEACHES.currYear=%s
+                    AND TEACHES.semester=%s''', (courseCode, sectionCode, year, semester,))
     conn.commit()
     return t.fetchall()
 
@@ -79,16 +84,14 @@ def getFeedBack(form):
 
 def submitFeedback(feedbacks):
     fetch = operator.attrgetter('student', 'taID', 'course', 'section', 'currYear', 'semester', 'q1', 'q2', 'q3', 'feedback')
+    query = """INSERT INTO FEEDBACK student=%s, taID=%s, course=%s, section=%s, currYear=%s, semester=%s, q1=%s, q2=%s, q3=%s, feedback=%s"""  %(', '.join(insertions))
+
     insertions = []
     for feedback in feedbacks:
-        insertions.append("(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)" %(*fetch(feedback)))
+        t = conn.cursor()
+        t.execute(query, fetch(feedback))
+        conn.commit()
 
-    query = """INSERT INTO FEEDBACK(student, taID, course, section, currYear, semester, q1, q2, q3, feedback) VALUES %s"""  %(', '.join(insertions))
-    
-    t = conn.cursor()
-    t.execute(query)
-    conn.commit()
-    
 
 def getCourseFeedbacks(courseCode, year, semester):
     t = conn.cursor()
