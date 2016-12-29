@@ -12,7 +12,11 @@ import json
 
 from datetime import datetime as dt
 
-def getYearSemester(year, month):
+def getYearSemester(year=None, month=None):
+    today = dt.today()
+    if year is None: year = today.year
+    if month is None: month = today.month
+
     semester = {0:2, 1:3, 2:1, 3:1}[month//4]
     if month <= 8: year -= 1
 
@@ -64,9 +68,9 @@ class GetSectionsHandler(tornado.web.RequestHandler):
         year, semester = getYearSemester(today.year, today.month)
 
         results = list(dbhandler.getSections(code, year, semester))
-        for i, (sectionID, startTime, endTime) in enumerate(results):
-            results[i][1] = startTime.strftime("%H:%M")
-            results[i][2] = endTime.strftime("%H:%M")
+        for i, (sectionID, weekday, startTime, endTime) in enumerate(results):
+            results[i][2] = startTime.strftime("%H:%M")
+            results[i][3] = endTime.strftime("%H:%M")
 
 
         self.write(json.dumps({"results":results}))
@@ -141,7 +145,7 @@ application = tornado.web.Application(
     (r'/addTA',         AddTAHandler),
     (r'/assignTA',      AssignTAHandler),
     (r'/viewFeedBack',  ViewFeedbackHandler),
-    (r'/getSectionTAs',  GetSectionTAHandler),
+    (r'/getSectionTAs', GetSectionTAHandler),
     # Static asset handlers
     (r'/(favicon.ico)', tornado.web.StaticFileHandler, {'path': 'assets/'        }),
     (r'/images/(.*)',   tornado.web.StaticFileHandler, {'path': 'assets/images/' }),

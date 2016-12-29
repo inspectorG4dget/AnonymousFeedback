@@ -2,9 +2,9 @@ import operator
 import pg8000
 
 from datetime import datetime as dt
+from backend import getYearSemester
 
-
-conn = pg8000.connect(host="127.0.0.1", port=5432,user="feed", password="meh", database="feedback")
+conn = pg8000.connect(host="127.0.0.1", port=5432,user="feedback", password="meh", database="ashwin")
 
 def getCourses():
     t=conn.cursor()
@@ -16,7 +16,7 @@ def getCourses():
 
 def getSections(courseCode, year, semester):
     t=conn.cursor()
-    t.execute("""SELECT sectionID, startTime, endTime FROM section WHERE course=%s AND currYear=%s AND semester=%s;""", (courseCode, year, semester,))
+    t.execute("""SELECT sectionID, weekday, startTime, endTime FROM section WHERE course=%s AND currYear=%s AND semester=%s;""", (courseCode, year, semester))
     conn.commit()
     return t.fetchall()
 
@@ -83,17 +83,18 @@ def getFeedBack(form):
 
 
 def submitFeedback(feedbacks):
-    fetch = operator.attrgetter('student', 'taID', 'course', 'section', 'currYear', 'semester', 'q1', 'q2', 'q3', 'feedback')
-    query = """INSERT INTO FEEDBACK student=%s, taID=%s, course=%s, section=%s, currYear=%s, semester=%s, q1=%s, q2=%s, q3=%s, feedback=%s"""  %(', '.join(insertions))
+    query = """INSERT INTO FEEDBACK student=%s, course=%s, section=%s, currYear=%s, semester=%s, taID=%s, q1=%s, q2=%s, q3=%s, feedback=%s"""
+    idents = operator.itemgetter('student', 'course', 'section', 'currYear', 'semester')(feedbacks)
 
-    insertions = []
-    for feedback in feedbacks:
+    fetch = operator.itemgetter('taID', 'q1', 'q2', 'q3', 'feedback')
+    for feedback in feedbacks['feedback']:
         t = conn.cursor()
-        t.execute(query, fetch(feedback))
+        t.execute(query, idents+fetch(feedback))
         conn.commit()
 
 
-def getCourseFeedbacks(courseCode, year, semester):
+def getCourseFeedbacks(courseCode):
+    year, semester = getYearSemester()
     t = conn.cursor()
     t.execute("""SELECT section, taID FROM teaches WHERE course=%s AND currYear=%s AND semester=%s""", (courseCode, year, semester))
     conn.commit()
