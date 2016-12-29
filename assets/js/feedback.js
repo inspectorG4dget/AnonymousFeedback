@@ -25,15 +25,15 @@ $(document.body).on('change','.section',function() {
     if ($("input[name='section']").is(':checked')) {
         $('.feedback').show();
         $('#section_code').val($("input[name='section']:checked").val());
-		//TODO: Generate input data from selection
-		input = { course:"CEG2136", section:"T1"};
+		input = {
+			course : $("input[name=course_code]").val(),
+			section : $("input[name=section_code]").val()
+		};
 		$.post("/getSectionTAs",input,function(data,status){
-			alert(data);
 			data = $.parseJSON(data);
 			var fields = $(".fields");
 			fields.html('');
 			for(let ta of data.TAs){
-				alert(ta.name);
 				var name = ta.name.replace(/\s/g, '');
 
 				tas.push({name:ta.name,id:ta.taID});
@@ -83,7 +83,6 @@ $(document.body).on('change','.section',function() {
 $(function(){
 	$('.feedback_form').on('submit',function(event){
         	event.preventDefault() ;
-        	alert("Form Submission stoped.");
 			f = []
 			for(let ta of tas){
 				var name = ta.name.replace(/\s/g, '');
@@ -102,7 +101,9 @@ $(function(){
 				section : $("input[name=section_code]").val(),
 				feedback : f
 			};
+			alert(JSON.stringify(data));
 			$.post("/submitFeedBack",data,function(data,status){
+				//TODO : Give user visual confirmation
 				alert("Success");
 			});
 	});
