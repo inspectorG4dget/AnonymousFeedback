@@ -32,6 +32,7 @@ $(document.body).on('change','.section',function() {
 			data = $.parseJSON(data);
 			var fields = $(".fields");
 			fields.html('');
+			tas =[];
 			for(let ta of data.TAs){
 				var name = ta.name.replace(/\s/g, '');
 

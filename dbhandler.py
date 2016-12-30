@@ -26,7 +26,7 @@ conn = pg8000.connect(host=ip, port=port,user=username, password=pwd, database=d
 
 def getCourses():
     t=conn.cursor()
-    t.execute("""SELECT * FROM course;""")
+    t.execute("""SELECT * FROM course""")
     conn.commit()
     #inserted new user
     return t.fetchall()
@@ -34,7 +34,7 @@ def getCourses():
 
 def getSections(courseCode, year, semester):
     t=conn.cursor()
-    t.execute("""SELECT sectionID, weekday, startTime, endTime FROM section WHERE course=%s AND currYear=%s AND semester=%s;""", (courseCode, year, semester))
+    t.execute("""SELECT sectionID, weekday, startTime, endTime FROM section WHERE course=%s AND currYear=%s AND semester=%s""", (courseCode, year, semester))
     conn.commit()
     return t.fetchall()
 
