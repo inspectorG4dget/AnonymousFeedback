@@ -61,9 +61,9 @@ $( ".course_selecter" ).change(function() {
             section_selecter.val("");
             section_selecter.html('');
             data = $.parseJSON(data);
-            sections_selecter.append('<option value="None">None</option>');
+            section_selecter.append('<option value="None">None</option>');
             for(let time of data.results){
-                sections_selecter.append('<option value="'+time+'">'+time+'</option>');
+                section_selecter.append('<option value="'+time+'">'+time+'</option>');
             }
             $('#course_code').val($(".course_select").val());
         });
@@ -74,7 +74,7 @@ $(document.body).on('submit','.manage',function(event) {
 	switch(state){
 		case STATES.FEEDBACK:
 			//TODO: Add get feedback post request
-			$.post('/getFeedbacks', null, function(data, status) {
+			$.post('/viewFeedBack', null, function(data, status) {
 				var schema = data['feedback']['schema'];
 				var obj = {
 				   schema: schema,

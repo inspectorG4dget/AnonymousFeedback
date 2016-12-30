@@ -1,8 +1,8 @@
 #####
-# Author: NuclearBanane
+# Authors: NuclearBanane, inspectorG4dget
 # Contributors :
-# Date : 2016/12/17
-# Version : v0.1
+# Date : 2016/12/30
+# Version : v0.7
 #####
 
 import tornado.ioloop

@@ -1,3 +1,10 @@
+#####
+# Authors: NuclearBanane, inspectorG4dget
+# Contributors :
+# Date : 2016/12/30
+# Version : v0.7
+#####
+
 import ConfigParser as CP
 import operator
 import pg8000
