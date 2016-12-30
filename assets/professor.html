@@ -15,7 +15,7 @@
     </select>
 </div>
 <div class="tool_bar">
-        <form class="feedback" method="post">
+        <form class="manage" method="post">
 			<div class="course_list" style="display: none;">
 				<select class="course_selecter" name="course">
             	</select>
@@ -32,9 +32,22 @@
             	<input type='text' name='courseCode' /> <br />
 			</div>
 			<div class="addSection" style="display: none;">
-            	<input type='text' name='sectionCode' /> <br />
-            	<input type='text' name='startTime' /> <br />
-            	<input type='text' name='endTime' /> <br />
+            	Section Code : <input type='text' name='sectionCode' /> <br />
+				Year : <input type='text' name='year' /> <br />
+				Semester : 		<select class="semester_selecter" name="semester">
+									<option value="1">Fall</option>
+									<option value="2">Winter</option>
+									<option value="3">Summer</option>
+								</select> <br />
+				Week Day : <select class="semester_selecter" name="semester">
+									<option value="1">Monday</option>
+									<option value="2">Tuesday</option>
+									<option value="3">Wednesday</option>
+									<option value="4">Thursday</option>
+									<option value="5">Friday</option>
+								</select>  <br />
+            	Start Time : <input type='text' name='startTime' /> <br />
+            	End Time : <input type='text' name='endTime' /> <br />
 			</div>
 			<div class="addTA" style="display: none;">
             	<table >
@@ -48,7 +61,6 @@
         </form>
 </div>
 <div class="data_view" style="display: none;">
-    <!-- TODO: Make a table view -->
     <table class="data_table">
 
     </table>

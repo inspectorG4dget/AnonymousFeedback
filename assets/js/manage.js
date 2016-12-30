@@ -6,11 +6,11 @@ STATES ={
 	TA:4,
 	ASSIGN:5
 }
-
+var state = 0;
 $( ".action_selecter" ).change(function() {
-	var action = parseInt($(".action_selecter").val());
+	state = parseInt($(".action_selecter").val());
 	hideAll();
-	switch(action){
+	switch(state){
 		case STATES.FEEDBACK:
 			updateCourseSlct();
 			$('.course_list').show();
@@ -33,6 +33,7 @@ $( ".action_selecter" ).change(function() {
 			break;
 		case STATES.ASSIGN:
 			updateCourseSlct();
+			updateTASlct();
 			$('.course_list').show();
 			$('.section_list').show();
 			$('.ta_list').show();
@@ -43,11 +44,13 @@ $( ".action_selecter" ).change(function() {
 
 $( ".course_selecter" ).change(function() {
 	alert("oy");
-
+	if(state == STATES.SECTION){
+		return; // do nothing
+	}
     if($(".course_selecter").val() == "None") {
 		alert("oy");
         $('.section_selecter').html('');
-        return;
+        return; // do nothing
     }
     $.post("/getSections",{ coursecode : $(".course_selecter").val() },
         function(data, status){
@@ -62,47 +65,68 @@ $( ".course_selecter" ).change(function() {
             $('#course_code').val($(".course_select").val());
         });
 });
-$('.feedback').on('submit',function(event){
-        event.preventDefault() ;
-		formdata={
-			'course' : $(".course_selecter").val(),
-			'section' : $(".sections_list").val()
-		}
-		$.post('/viewFeedBack',formdata, function(data,status) {
-				createTable($.parseJSON(data));
-			}
-		)
-});
 
-$(document.body).on('change','.section',function() {
-    if ($("input[name='section']").is(':checked')) {
-        $('.feedback').show();
-        $('#section_code').val($("input[name='section']:checked").val());
-    }
-});
-
-function hideAll(){
-	$('.course_list').hide();
-	$('.section_list').hide();
-	$('.ta_list').hide();
-	$('.addCourse').hide();
-	$('.addSection').hide();
-	$('.addTA').hide();
-}
-
-function test(){
-	var data = {
-		schema : [
-			'person', 'id'
-		],
-		rows : [
-			['Ashwin','45'],
-			['PineApple','pen']
-		]
+$(document.body).on('submit','.manage',function(event) {
+	alert(
+		"yo"
+	);
+	event.preventDefault();
+	switch(state){
+		case STATES.FEEDBACK:
+			//TODO: Add get feedback post request
+			break;
+		case STATES.COURSE:
+			//TODO: Add create course post request
+			var data = {
+				courseCode : $(".addCourse").find("input[name='courseCode']").val()
+			};
+			$.post("/createCourse",data,function(data, status){
+				//TODO: Handle submission
+				alert("sent");
+			});
+			break;
+		case STATES.SECTION:
+			//TODO: Add create section post request
+			var data = {
+				courseCode : 	$(".course_selecter").val() ,
+				sectionCode : 	$(".addSection").find("input[name='sectionCode']").val(),
+				year : 			$(".addSection").find("input[name='year']").val(),
+				semester : 		$(".addSection").find("input[name='semester']").val(),
+				weekday : 		$(".addSection").find("input[name='weekday']").val(),
+				startTime : 	$(".addSection").find("input[name='startTime']").val(),
+				endTime : 		$(".addSection").find("input[name='endTime']").val()
+			};
+			$.post("/createSection",data,function(data, status){
+				//TODO: Handle submission
+				alert("sent");
+			});
+			break;
+		case STATES.TA:
+			var data = {
+				fname : $(".addTA").find("input[name='fname']").val(),
+				lname : $(".addTA").find("input[name='lname']").val(),
+				stnum : $(".addTA").find("input[name='stnum']").val(),
+				profilepic : $(".addTA").find("input[name='profilePic']").val()
+			};
+			$.post("/createTA",data,function(data, status){
+				//TODO: Handle submission
+				alert("sent");
+			});
+			break;
+		case STATES.ASSIGN:
+			//TODO: Add assign ta post request
+			var data = {
+				courseCode : $(".course_selecter").val() ,
+				sectionCode : $(".section_selecter").val(),
+				taID : $(".ta_selecter").val()
+			};
+			$.post("/asssignTA",data,function(data, status){
+				//TODO: Handle submission
+				alert("sent");
+			});
+			break;
 	}
-	createTable(data);
-	$('.data_view').show();
-}
+});
 
 function updateCourseSlct(){
 	$.post("/getCourses",{th : "lolright"},
@@ -115,6 +139,28 @@ function updateCourseSlct(){
 				course_selecter.append('<option value="'+code+'">'+code+'</option>');
 			}
 		});
+}
+
+function updateTASlct(){
+	$.post("/getTA",{th : "lolright"},
+		function(data, status){
+			var ta_selecter = $(".ta_selecter");
+			ta_selecter.html('');
+			data = $.parseJSON(data);
+			ta_selecter.append('<option value="None">None</option>');
+			for(let ta of data.results){
+				ta_selecter.append('<option value="'+ta[0]+'">'+ta[1]+'</option>');
+			}
+		});
+}
+
+function hideAll(){
+	$('.course_list').hide();
+	$('.section_list').hide();
+	$('.ta_list').hide();
+	$('.addCourse').hide();
+	$('.addSection').hide();
+	$('.addTA').hide();
 }
 
 function createTable(data){
