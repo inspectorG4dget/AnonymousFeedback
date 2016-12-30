@@ -115,10 +115,10 @@ def getCourseFeedbacks(form):
 
 
 def getAllTAs():
-    query = """SELECT firstname, lastname from TA"""
+    query = """SELECT taid, firstname, lastname from TA"""
     t = conn.cursor()
     t.execute(query)
     conn.commit()
     tas = t.fetchall()
 
-    return [' '.join(row) for row in tas]
+    return [(taid, ' '.join(row[1:])) for row in tas]
