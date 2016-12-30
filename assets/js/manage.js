@@ -9,34 +9,36 @@ STATES ={
 }
 
 $( ".action_selecter" ).change(function() {
-    var action = parseInt($(".action_selecter").val());
-    hideAll();
-    switch(action){
-        case STATES.FEEDBACK:
-            $.post("/getCourses",{th : "lolright"},
-                function(data, status){
-                    var course_selecter = $(".course_selecter");
-                    course_selecter.html('');
-                    data = $.parseJSON(data);
-                    course_selecter.append('<option value="None">None</option>');
-                    for(let code of data.results){
-                        course_selecter.append('<option value="'+code+'">'+code+'</option>');
-                    }
-                });
-            $('.feedback_tools').show();
-            break;
-        case STATES.COURSE:
-            $('.course_tools').show();
-            break;
-        case STATES.SECTION:
-            $('.section_tools').show();
-            break;
-        case STATES.TA:
-            $('.ta_tools').show();
-            break;
-        case STATES.ASSIGN:
-            $('.assign_tools').show();
-            break;
+	var action = parseInt($(".action_selecter").val());
+	hideAll();
+	switch(action){
+		case STATES.FEEDBACK:
+			updateCourseSlct();
+			$('.course_list').show();
+			$('.section_list').show();
+			$('.submit_button').show();
+			break;
+		case STATES.COURSE:
+			$('.addCourse').show();
+			$('.submit_button').show();
+			break;
+		case STATES.SECTION:
+			updateCourseSlct();
+			$('.course_list').show();
+			$('.addSection').show();
+			$('.submit_button').show();
+			break;
+		case STATES.TA:
+			$('.addTA').show();
+			$('.submit_button').show();
+			break;
+		case STATES.ASSIGN:
+			updateCourseSlct();
+			$('.course_list').show();
+			$('.section_list').show();
+			$('.ta_list').show();
+			$('.submit_button').show();
+			break;
         case STATES.DATA:
             $('.data_view').show();
             $.post('/getFeedbacks', null, function(data, status) {
@@ -70,19 +72,22 @@ $( ".action_selecter" ).change(function() {
 });
 
 $( ".course_selecter" ).change(function() {
+	alert("oy");
+
     if($(".course_selecter").val() == "None") {
-        $('.sections_list').html('');
+		alert("oy");
+        $('.section_selecter').html('');
         return;
     }
     $.post("/getSections",{ coursecode : $(".course_selecter").val() },
         function(data, status){
-            var sections_list = $(".sections_list");
-            $('#section_code').val("");
-            sections_list.html('');
+            var section_selecter = $(".section_selecter");
+            section_selecter.val("");
+            section_selecter.html('');
             data = $.parseJSON(data);
-            sections_list.append('<option value="None">None</option>');
+            sections_selecter.append('<option value="None">None</option>');
             for(let time of data.results){
-                sections_list.append('<option value="'+time+'">'+time+'</option>');
+                sections_selecter.append('<option value="'+time+'">'+time+'</option>');
             }
             $('#course_code').val($(".course_select").val());
         });
@@ -107,11 +112,12 @@ $(document.body).on('change','.section',function() {
 });
 
 function hideAll(){
-    $('.feedback_tools').hide();
-    $('.course_tools').hide();
-    $('.section_tools').hide();
-    $('.ta_tools').hide();
-    $('.assign_tools').hide();
+	$('.course_list').hide();
+	$('.section_list').hide();
+	$('.ta_list').hide();
+	$('.addCourse').hide();
+	$('.addSection').hide();
+	$('.addTA').hide();
 }
 
 function test(){
@@ -128,6 +134,18 @@ function test(){
     $('.data_view').show();
 }
 
+function updateCourseSlct(){
+	$.post("/getCourses",{th : "lolright"},
+		function(data, status){
+			var course_selecter = $(".course_selecter");
+			course_selecter.html('');
+			data = $.parseJSON(data);
+			course_selecter.append('<option value="None">None</option>');
+			for(let code of data.results){
+				course_selecter.append('<option value="'+code+'">'+code+'</option>');
+			}
+		});
+}
 
 function createTable(data){
     var schema = data.schema;
