@@ -126,6 +126,13 @@ class AssignTAHandler(tornado.web.RequestHandler):
         dbhandler.getFeedBack(self.request.arguments)
 
 
+class ListAllTAsHandler(tornado.web.RequestHandler):
+    @tornado.web.asynchronous
+    def post(self):
+        self.write(json.dumps({"results":dbhandler.getAllTAs()}))
+        self.finish()
+
+
 ####
 # Tornado uses 'handlers' to take care of requests to certain URLs
 # This makes certain API requests from a web page or such an easy to handle
@@ -147,6 +154,7 @@ application = tornado.web.Application(
     (r'/assignTA',      AssignTAHandler),
     (r'/viewFeedBack',  ViewFeedbackHandler),
     (r'/getSectionTAs', GetSectionTAHandler),
+    (r'/getAllTAs',     ListAllTAsHandler),
     # Static asset handlers
     (r'/(favicon.ico)', tornado.web.StaticFileHandler, {'path': 'assets/'        }),
     (r'/images/(.*)',   tornado.web.StaticFileHandler, {'path': 'assets/images/' }),

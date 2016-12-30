@@ -45,10 +45,9 @@ def getSectionTA(courseCode, sectionCode, year, semester):
     return t.fetchall()
 
 
-def createTA(form):
+def createTA(stnum, fname, lname, profilepic):
     t=conn.cursor()
-    t.execute("""INSERT INTO ta(studnum,fn, ln, profilepic) VALUES (%s,%s,%s,%s)""",
-        (form['studnum'][0],form['fn'][0],form['ln'][0],form['profilepic'][0],))
+    t.execute("""INSERT INTO ta(stnum,firstname, lastname, profilepic) VALUES (%s,%s,%s,%s)""", (stnum, fname, lname, profilepic))
     conn.commit()
 
 def createCourse(courseCode):
@@ -56,21 +55,15 @@ def createCourse(courseCode):
     t.execute("""INSERT INTO course(code) VALUES (%s)""", (courseCode,))
     conn.commit()
 
-def createSection(courseCode, sectionCode, startTime, endTime):
+def createSection(courseCode, sectionCode, year, semester, weekday, startTime, endTime):
     t=conn.cursor()
-    t.execute("""INSERT INTO section(code, startTime, endTime) VALUES (%s, %s, %s)""", (courseCode, sectionCode, startTime, endTime))
+    t.execute("""INSERT INTO section(course, sectionID, year, semester, weekday, startTime, endTime) VALUES (%s, %s, %s)""", (courseCode, sectionCode, year, semester, weekday, startTime, endTime))
     conn.commit()
 
-def assignTAtoSection(form):
+def assignTAtoSection(taID, courseCode, sectionCode):
     t=conn.cursor()
-    t.execute("""SELECT sectionid FROM section WHERE code=$s AND timeslot=%s """,
-        (form['code'][0],form['timeslot'][0]),)
-    conn.commit()
-    suuid = t.fetchall()
-
-    t=conn.cursor()
-    t.execute("""INSERT INTO teaches(studnum,sectionid) VALUES (%s,%s)""",
-        (form['studnum'][0],suuid[0][0],))
+    year, semester = getYearSemester()
+    t.execute("""INSERT INTO teaches(taid, course, section, year, semester) VALUES (%s, %s, %s, %s, %s)""", (taID, courseCode, sectionCode, year, semester))
     conn.commit()
 
 def getFeedBack(form):
@@ -119,3 +112,13 @@ def getCourseFeedbacks(form):
         answer[ta]['feedback'].append({'q1':q1, 'q2':q2, 'q3':q3, 'feedback':feedback})
 
     return {'feedback': answer}
+
+
+def getAllTAs():
+    query = """SELECT taid, firstname, lastname from TA"""
+    t = conn.cursor()
+    t.execute(query)
+    conn.commit()
+    tas = t.fetchall()
+
+    return [(taid, ' '.join(row[1:])) for row in tas]
