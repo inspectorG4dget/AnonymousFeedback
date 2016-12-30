@@ -129,7 +129,7 @@ class AssignTAHandler(tornado.web.RequestHandler):
 class ListAllTAsHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
     def post(self):
-        self.write(json.dumps(dbhandler.getAllTAs()))
+        self.write(json.dumps({"results":dbhandler.getAllTAs()}))
         self.finish()
 
 
