@@ -62,10 +62,12 @@ def createCourse(courseCode):
     t.execute("""INSERT INTO course(code) VALUES (%s)""", (courseCode,))
     conn.commit()
 
-def createSection(courseCode, sectionCode, year, semester, weekday, startTime, endTime):
+#def createSection(courseCode, sectionCode, year, semester, weekday, startTime, endTime):
+def createSection(courseCode):
     t=conn.cursor()
     t.execute("""INSERT INTO section(course, sectionID, year, semester, weekday, startTime, endTime) VALUES (%s, %s, %s)""", (courseCode, sectionCode, year, semester, weekday, startTime, endTime))
     conn.commit()
+
 
 def assignTAtoSection(taID, courseCode, sectionCode):
     t=conn.cursor()
@@ -73,25 +75,9 @@ def assignTAtoSection(taID, courseCode, sectionCode):
     t.execute("""INSERT INTO teaches(taid, course, section, year, semester) VALUES (%s, %s, %s, %s, %s)""", (taID, courseCode, sectionCode, year, semester))
     conn.commit()
 
-def getFeedBack(form):
-    t=conn.cursor()
-    t.execute("""SELECT sectionid FROM section WHERE code=%s AND timeslot=%s;""",
-        (str(form['course'][0]), str(form['section'][0]),))
-    conn.commit()
-    suuid = t.fetchall();
-
-    schema = ['range_fields','comments']
-    t=conn.cursor()
-    t.execute("""SELECT range_fields,comments FROM feedback WHERE sectionid=%s""",(suuid[0][0],))
-    conn.commit()
-    x = dict()
-    x['schema'] = schema
-    x['rows'] = t.fetchall()
-    return x
-
 
 def submitFeedback(feedbacks):
-    query = """INSERT INTO FEEDBACK student=%s, course=%s, section=%s, currYear=%s, semester=%s, taID=%s, q1=%s, q2=%s, q3=%s, feedback=%s"""
+    query = """INSERT INTO FEEDBACK (student, course, section, currYear, semester, taID, q1, q2, q3, feedback) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
     idents = operator.itemgetter('student', 'course', 'section')(feedbacks)
     idents += getYearSemester()
 

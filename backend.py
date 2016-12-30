@@ -47,7 +47,7 @@ class ManageHandler(tornado.web.RequestHandler):
 class SubmitFeedbackHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
     def post(self):
-        dbhandler.submitFeedback(json.loads(self.request.arguments))
+        dbhandler.submitFeedback(json.loads(self.request.body))
         self.write('{success}')
         self.finish()
 
@@ -112,6 +112,7 @@ class AddCourseHandler(tornado.web.RequestHandler):
 class AddSectionHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
     def post(self):
+        print 'hi'
         dbhandler.createSection(self.request.arguments)
 
 
