@@ -1,10 +1,11 @@
 STATES ={
-	SELECT:0,
-	FEEDBACK:1,
-	COURSE:2,
-	SECTION:3,
-	TA:4,
-	ASSIGN:5
+    SELECT:0,
+    FEEDBACK:1,
+    COURSE:2,
+    SECTION:3,
+    TA:4,
+    ASSIGN:5,
+    DATA:6
 }
 
 $( ".action_selecter" ).change(function() {
@@ -38,7 +39,36 @@ $( ".action_selecter" ).change(function() {
 			$('.ta_list').show();
 			$('.submit_button').show();
 			break;
-	}
+        case STATES.DATA:
+            $('.data_view').show();
+            $.post('/getFeedbacks', null, function(data, status) {
+                var schema = data['feedback']['schema'];
+                var obj = {
+                   schema: schema,
+                   rows: [] 
+                }
+
+                $.each(data['feedback'], function(ta, stats)) {
+                    // create title for table
+                    var course = stats['course'];
+                    var section = stats['section'];
+                    var starTime = stats['startTime'];
+                    var endTime = stats['endTime'];
+                    var feedback = stats['feedback'];
+
+                    // create object containing rows, so we can write to the table
+                    $feedback.forEach(function(stat)) {
+                        var q1 = stat['q1'];
+                        var q2 = stat['q2'];
+                        var q3 = stat['q3'];
+                        var notes = stats['feedback'];
+                        obj.rows.push([q1, q2, q3, notes]);
+                    }
+                    createTable(obj);
+                }
+            });
+            break;
+    }
 });
 
 $( ".course_selecter" ).change(function() {
@@ -55,23 +85,23 @@ $( ".course_selecter" ).change(function() {
             section_selecter.val("");
             section_selecter.html('');
             data = $.parseJSON(data);
-			section_selecter.append('<option value="None">None</option>');
+            sections_selecter.append('<option value="None">None</option>');
             for(let time of data.results){
-				section_selecter.append('<option value="'+time+'">'+time+'</option>');
+                sections_selecter.append('<option value="'+time+'">'+time+'</option>');
             }
             $('#course_code').val($(".course_select").val());
         });
 });
 $('.feedback').on('submit',function(event){
         event.preventDefault() ;
-		formdata={
-			'course' : $(".course_selecter").val(),
-			'section' : $(".sections_list").val()
-		}
-		$.post('/viewFeedBack',formdata, function(data,status) {
-				createTable($.parseJSON(data));
-			}
-		)
+        formdata={
+            'course' : $(".course_selecter").val(),
+            'section' : $(".sections_list").val()
+        }
+        $.post('/viewFeedBack',formdata, function(data,status) {
+                createTable($.parseJSON(data));
+            }
+        )
 });
 
 $(document.body).on('change','.section',function() {
@@ -91,17 +121,17 @@ function hideAll(){
 }
 
 function test(){
-	var data = {
-		schema : [
-			'person', 'id'
-		],
-		rows : [
-			['Ashwin','45'],
-			['PineApple','pen']
-		]
-	}
-	createTable(data);
-	$('.data_view').show();
+    var data = {
+        schema : [
+            'person', 'id'
+        ],
+        rows : [
+            ['Ashwin','45'],
+            ['PineApple','pen']
+        ]
+    }
+    createTable(data);
+    $('.data_view').show();
 }
 
 function updateCourseSlct(){
@@ -118,21 +148,21 @@ function updateCourseSlct(){
 }
 
 function createTable(data){
-	var schema = data.schema;
-	var table = $('.data_view')
-	table.html('')
-	table.append('<table><tr>')
-	for(let header of schema){
-		table.append('<th>'+header+'</th>')
-	}
-	table.append('</tr>')
-	for(let row of data.rows){
-		table.append('<tr>')
-		for(let col of row){
-			table.append('<td>'+col+'</td>');
-		}
-		table.append('</tr>')
-	}
-	table.append('</table>')
-	$('.data_view').show();
+    var schema = data.schema;
+    var table = $('.data_view')
+    table.html('')
+    table.append('<table><tr>')
+    for(let header of schema){
+        table.append('<th>'+header+'</th>')
+    }
+    table.append('</tr>')
+    for(let row of data.rows){
+        table.append('<tr>')
+        for(let col of row){
+            table.append('<td>'+col+'</td>');
+        }
+        table.append('</tr>')
+    }
+    table.append('</table>')
+    $('.data_view').show();
 }
