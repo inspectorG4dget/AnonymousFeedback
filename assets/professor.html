@@ -1,57 +1,79 @@
 <html>
 <head>
-	<title>FeedBack Management</title>
-	<link rel="stylesheet" href="css/styles.css">
+    <title>FeedBack Management</title>
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
 <div class="action_select">
-	<select class="action_selecter" name="action">
-		<option value='0'	>None</option>
-		<option value='1'	>View feedback</option>
-		<option value='2'	>Add Course   </option>
-		<option value='3'	>Add Section  </option>
-		<option value='4'	>Add Table	  </option>
-		<option value='5'	>Assign TA    </option>
-	</select>
+    <select class="action_selecter" name="action">
+        <option value='0'    >None</option>
+        <option value='1'    >View feedback</option>
+        <option value='2'    >Add Course   </option>
+        <option value='3'    >Add Section  </option>
+        <option value='4'    >Add Table      </option>
+        <option value='5'    >Assign TA    </option>
+    </select>
 </div>
 <div class="tool_bar">
-	<div class="feedback_tools" style="display: none;">
-		<form class="feedback" method="post">
-			<select class="course_selecter" name="course">
-			</select>
-			<select class="sections_list" name="section">
-			</select>
-			<input type='submit' value='Submit' />
-		</form>
-	</div>
+    <div class="feedback_tools" style="display: none;">
+        <form class="feedback" method="post">
+            <select class="course_selecter" name="course">
+            </select>
+            <select class="sections_list" name="section">
+            </select>
+            <input type='submit' value='Submit' />
+        </form>
+    </div>
 
 
-	<div class="course_tools" style="display: none;">
-		<form class="course"  method="post">
-				<!-- TODO :  Input for creating new course code-->
-			<input type='submit' value='Submit' />
-		</form>
-	</div>
+    <div class="course_tools" style="display: none;">
+        <form class="course"  method="post">
+            <input type='text' name='courseCode' /> <br />
+            <input type='submit' value='Submit' />
+        </form>
+    </div>
 
 
-	<div class="section_tools" style="display: none;">
-		<!-- TODO :  Input for creating new section based on courses-->
-	</div>
+    <div class="section_tools" style="display: none;">
+        <form class="section"  method="post">
+            <select class="course_selecter" name="courseCode">
+            </select> <br />
+            <input type='text' name='sectionCode' /> <br />
+            <input type='text' name='startTime' /> <br />
+            <input type='text' name='endTime' /> <br />
+            <input type='submit' value='Submit' />
+        </form>
+        
+    </div>
 
-	<div class="ta_tools" style="display: none;">
-		<!-- TODO :  Input for creating new  TA profile-->
+    <div class="ta_tools" style="display: none;">
+        <form class="newTA"  method="post">
+            <table>
+                <tr><th>First Name</th> <td><input type='text' name='fname' /></td></tr>
+                <tr><th>Last Name</th> <td><input type='text' name='lname' /></td></tr>
+                <tr><th>Student Number</th> <td><input type='text' name='stnum' /></td></tr>
+                <tr><th>Profile Picture</th> <td><input type='file' name='profilePic'></td></tr>
+            </table>
+        </form>
+    </div>
 
-	</div>
-
-	<div class="assign_tools" style="display: none;">
-		<!-- TODO :  Select course  than section than ta-->
-	</div>
+    <div class="assign_tools" style="display: none;">
+        <form class="assignTA"  method="post">
+            <select class="course_selecter" name="courseCode">
+            </select> <br />
+            <select class="sections_list" name="sectionCode">
+            </select> <br />
+            <select class="ta_selecter" name="taID">
+            </select> <br />
+            <input type='submit' value='Submit' />
+        </form>
+    </div>
 </div>
 <div class="data_view" style="display: none;">
-	<!-- TODO: Make a table view -->
-	<table class="data_table">
+    <!-- TODO: Make a table view -->
+    <table class="data_table">
 
-	</table>
+    </table>
 </div>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.js"></script>
 <script src="js/manage.js"></script>

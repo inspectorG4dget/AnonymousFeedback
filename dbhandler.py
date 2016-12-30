@@ -31,7 +31,6 @@ def getSections(courseCode, year, semester):
 
 
 def getSectionTA(courseCode, sectionCode, year, semester):
-    print courseCode , sectionCode , year, semester
     t = conn.cursor()
     t.execute('''SELECT taID, firstName, lastName
                 FROM TA, TEACHES
@@ -50,16 +49,14 @@ def createTA(form):
         (form['studnum'][0],form['fn'][0],form['ln'][0],form['profilepic'][0],))
     conn.commit()
 
-def createCourse(form):
+def createCourse(courseCode):
     t=conn.cursor()
-    t.execute("""INSERT INTO course(code) VALUES (%s)""",
-        (form['code'][0],))
+    t.execute("""INSERT INTO course(code) VALUES (%s)""", (courseCode,))
     conn.commit()
 
-def createSection(form):
+def createSection(courseCode, sectionCode, startTime, endTime):
     t=conn.cursor()
-    t.execute("""INSERT INTO section(code,timeslot) VALUES (%s,%s)""",
-        (form['code'][0],form['timeslot'][0]),)
+    t.execute("""INSERT INTO section(code, startTime, endTime) VALUES (%s, %s, %s)""", (courseCode, sectionCode, startTime, endTime))
     conn.commit()
 
 def assignTAtoSection(form):
