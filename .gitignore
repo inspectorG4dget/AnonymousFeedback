@@ -1,2 +1,3 @@
 *.pyc
 dbconn.conf
+./dbconn.conf

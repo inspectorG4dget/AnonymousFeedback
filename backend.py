@@ -47,7 +47,7 @@ class ManageHandler(tornado.web.RequestHandler):
 class SubmitFeedbackHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
     def post(self):
-        dbhandler.submitFeedback(self.request.arguments)
+        dbhandler.submitFeedback(json.loads(self.request.arguments))
         self.write('{success}')
         self.finish()
 

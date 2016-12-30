@@ -10,7 +10,6 @@ $( ".course_select" ).change(function() {
             var sections_list = $(".sections_list");
             $('#section_code').val("");
             sections_list.html('');
-			alert(data);
             data = $.parseJSON(data);
             for(let section of data.results){
                 sections_list.append(course_code+section[0]+": "+section[1]+" - "+section[2]);
@@ -101,8 +100,7 @@ $(function(){
 				section : $("input[name=section_code]").val(),
 				feedback : f
 			};
-			alert(JSON.stringify(data));
-			$.post("/submitFeedBack",data,function(data,status){
+			$.post("/submitFeedBack",JSON.stringify(data),function(data,status){
 				//TODO : Give user visual confirmation
 				alert("Success");
 			});
