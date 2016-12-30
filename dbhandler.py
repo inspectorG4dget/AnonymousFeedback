@@ -112,3 +112,13 @@ def getCourseFeedbacks(form):
         answer[ta]['feedback'].append({'q1':q1, 'q2':q2, 'q3':q3, 'feedback':feedback})
 
     return {'feedback': answer}
+
+
+def getAllTAs():
+    query = """SELECT firstname, lastname from TA"""
+    t = conn.cursor()
+    t.execute(query)
+    conn.commit()
+    tas = t.fetchall()
+
+    return [' '.join(row) for row in tas]
