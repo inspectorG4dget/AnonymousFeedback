@@ -89,16 +89,23 @@ def submitFeedback(feedbacks):
 
 
 def getCourseFeedbacks(form):
-    courseCode = form['course'][0]
-    sectionCode = form['section'][0]
+    courseCode = form['courseCode'][0]
+    sectionCode = form['sectionCode'][0]
     year, semester = getYearSemester()
 
-    query = """SELECT FEEDBACK.course, section, firstName, lastName, q1, q2, q3, feedback from FEEDBACK,TA,SECTION WHERE FEEDBACK.taID=TA.stnum AND SECTION.course=FEEDBACK.course AND SECTION.sectionid=FEEDBACK.section AND FEEDBACK.course=%s AND section.currYear=%s AND section.semester=%si"""
+    query = """SELECT FEEDBACK.course, section, firstName, lastName, q1, q2, q3, feedback
+				FROM FEEDBACK,TA,SECTION
+				WHERE FEEDBACK.taID=TA.stnum
+					AND SECTION.course=FEEDBACK.course
+					AND SECTION.sectionid=FEEDBACK.section
+					AND FEEDBACK.course=%s
+					AND section.currYear=%s
+					AND section.semester=%s"""
     t = conn.cursor()
     t.execute(query, (courseCode, year, semester))
     conn.commit()
     feedbacks = t.fetchall()
-    answer = {schema:['q1', 'q2', 'q3', 'feedback']}
+    answer = {"schema":['q1', 'q2', 'q3', 'feedback']}
     for course, section, startTime, endTime, fname, lname, q1, q2, q3, feedback in feedbacks:
         ta = "%s %s" %(fname, lname)
         if ta not in answer: answer[ta] = {'section':section, 'course':course, 'startTime':startTime, 'endTime':endTime, 'feedback':[]}

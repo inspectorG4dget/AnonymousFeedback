@@ -74,7 +74,12 @@ $(document.body).on('submit','.manage',function(event) {
 	switch(state){
 		case STATES.FEEDBACK:
 			//TODO: Add get feedback post request
-			$.post('/viewFeedBack', null, function(data, status) {
+			var data = {
+				courseCode : $(".course_selecter").val() ,
+				sectionCode : $(".section_selecter").val()
+			};
+			$.post('/viewFeedBack',data, function(data, status) {
+				alert("hello");
 				var schema = data['feedback']['schema'];
 				var obj = {
 				   schema: schema,
@@ -97,6 +102,7 @@ $(document.body).on('submit','.manage',function(event) {
 						var notes = stats['feedback'];
 						obj.rows.push([q1, q2, q3, notes]);
 					});
+					alert(JSON.stringify(obj));
 					createTable(obj);
 				});
 			});
@@ -106,7 +112,7 @@ $(document.body).on('submit','.manage',function(event) {
 			var data = {
 				courseCode : $(".addCourse").find("input[name='courseCode']").val()
 			};
-			$.post("/createCourse",data,function(data, status){
+			$.post("/addCourse",data,function(data, status){
 				//TODO: Handle submission
 				alert("sent");
 			});
@@ -122,7 +128,7 @@ $(document.body).on('submit','.manage',function(event) {
 				startTime : 	$(".addSection").find("input[name='startTime']").val(),
 				endTime : 		$(".addSection").find("input[name='endTime']").val()
 			};
-			$.post("/createSection",data,function(data, status){
+			$.post("/addSection",data,function(data, status){
 				//TODO: Handle submission
 				alert("sent");
 			});
