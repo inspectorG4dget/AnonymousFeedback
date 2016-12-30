@@ -5,6 +5,7 @@ import pg8000
 from datetime import datetime as dt
 from backend import getYearSemester
 
+
 config = CP.RawConfigParser()
 config.read('dbconn.conf')
 ip = config.get("Default", "IP")
@@ -14,6 +15,7 @@ pwd = config.get("Default", "password")
 db = config.get("Default", "database")
 
 conn = pg8000.connect(host=ip, port=port,user=username, password=pwd, database=db)
+
 
 def getCourses():
     t=conn.cursor()
@@ -100,29 +102,20 @@ def submitFeedback(feedbacks):
         conn.commit()
 
 
-def getCourseFeedbacks(courseCode):
+def getCourseFeedbacks(form):
+    courseCode = form['course'][0]
+    sectionCode = form['section'][0]
     year, semester = getYearSemester()
-    t = conn.cursor()
-    t.execute("""SELECT section, taID FROM teaches WHERE course=%s AND currYear=%s AND semester=%s""", (courseCode, year, semester))
-    conn.commit()
-    teachers = dict(t.fetchall())
 
-    for section, taID in teachers.iteritems():
-        t = conn.cursor()
-        tas = t.execute("""SELECT firstName, lastName FROM ta WHERE taID=%s""", (taID,))
-        conn.commit()
-        fname, lname = t.fetchall()[0]
-        teachers[section] = "%s %s" %(fname, lname)
-
-    query = """SELECT section, q1, q2, q3, feedback from FEEDBACK WHERE course=%s AND currYear=%s AND semester=%s"""
+    query = """SELECT FEEDBACK.course, section, firstName, lastName, q1, q2, q3, feedback from FEEDBACK,TA,SECTION WHERE FEEDBACK.taID=TA.stnum AND SECTION.course=FEEDBACK.course AND SECTION.sectionid=FEEDBACK.section AND FEEDBACK.course=%s AND section.currYear=%s AND section.semester=%si"""
     t = conn.cursor()
-    t.execute(query, (course, year, semester))
+    t.execute(query, (courseCode, year, semester))
     conn.commit()
-    feebacks = t.fetchall()
-    answer = {}
-    for section, q1, q2, q3, feedback in feedbacks():
-        ta = teachers[section]
-        if ta not in answer: answer[ta] = []
-        answer[ta].append({'q1':q1, 'q2':q2, 'q3':q3, 'feedback':feedback})
+    feedbacks = t.fetchall()
+    answer = {schema:['q1', 'q2', 'q3', 'feedback']}
+    for course, section, startTime, endTime, fname, lname, q1, q2, q3, feedback in feedbacks:
+        ta = "%s %s" %(fname, lname)
+        if ta not in answer: answer[ta] = {'section':section, 'course':course, 'startTime':startTime, 'endTime':endTime, 'feedback':[]}
+        answer[ta]['feedback'].append({'q1':q1, 'q2':q2, 'q3':q3, 'feedback':feedback})
 
     return {'feedback': answer}

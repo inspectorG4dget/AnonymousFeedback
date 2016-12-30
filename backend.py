@@ -100,7 +100,7 @@ class GetSectionTAHandler(tornado.web.RequestHandler):
 class ViewFeedbackHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
     def post(self):
-        x = dbhandler.getFeedBack(self.request.arguments)
+        x = dbhandler.getCourseFeedbacks(self.request.arguments)
         self.write(json.dumps(x))
         self.finish()
 
