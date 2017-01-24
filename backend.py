@@ -14,11 +14,12 @@ from datetime import datetime as dt
 
 def getYearSemester(year=None, month=None):
     today = dt.today()
-    if year is None: year = today.year
-    if month is None: month = today.month
+    if year is None:
+        year = today.year
+    if month is None:
+        month = today.month
 
     semester = {0:2, 1:3, 2:1, 3:1}[month//4]
-    if month <= 8: year -= 1
 
     return year, semester
 
@@ -66,8 +67,7 @@ class GetSectionsHandler(tornado.web.RequestHandler):
 
         today = dt.today()
         year, semester = getYearSemester(today.year, today.month)
-
-        results = list(dbhandler.getSections(code, year, semester))
+        results = list(dbhandler.getSections(code, year, semester, active=True))
         for i, (sectionID, weekday, startTime, endTime) in enumerate(results):
             results[i][1] = str(weekday)
             results[i][2] = startTime.strftime("%H:%M")
@@ -86,9 +86,11 @@ class GetSectionTAHandler(tornado.web.RequestHandler):
 
         today = dt.today()
         year, semester = getYearSemester(today.year, today.month)
-
+        try:
+            active = self.get_argument('active')
+        except :
+            active = False
         results = list(dbhandler.getSectionTA(course, section, year, semester))
-        print results
         for i,(taID, fname, lname) in enumerate(results):
             name = "%s %s" %(fname, lname)
             results[i] = {"taID": str(taID), "name": name}
@@ -107,13 +109,20 @@ class ViewFeedbackHandler(tornado.web.RequestHandler):
 class AddCourseHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
     def post(self):
-        dbhandler.createCourse(self.request.arguments)
+        dbhandler.createCourse(self.get_argument('courseCode'))
 
 class AddSectionHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
     def post(self):
-        print 'hi'
-        dbhandler.createSection(self.request.arguments)
+        print(self.request.arguments)
+        courseCode = self.get_argument('courseCode')
+        sectionCode = self.get_argument('sectionCode')
+        year = self.get_argument('year')
+        semester = self.get_argument('semester')
+        weekday = self.get_argument('weekday')
+        startTime = self.get_argument('startTime')
+        endTime = self.get_argument('endTime')
+        dbhandler.createSection(courseCode, sectionCode, year, semester, weekday, startTime, endTime)
 
 
 class AddTAHandler(tornado.web.RequestHandler):
@@ -130,7 +139,9 @@ class AssignTAHandler(tornado.web.RequestHandler):
 class ListAllTAsHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
     def post(self):
-        self.write(json.dumps({"results":dbhandler.getAllTAs()}))
+        a = dbhandler.getAllTAs()
+        print(a)
+        self.write(json.dumps({"results":a}))
         self.finish()
 
 
@@ -155,7 +166,7 @@ application = tornado.web.Application(
     (r'/assignTA',      AssignTAHandler),
     (r'/viewFeedBack',  ViewFeedbackHandler),
     (r'/getSectionTAs', GetSectionTAHandler),
-    (r'/getAllTAs',     ListAllTAsHandler),
+    (r'/getTA',     ListAllTAsHandler),
     # Static asset handlers
     (r'/(favicon.ico)', tornado.web.StaticFileHandler, {'path': 'assets/'        }),
     (r'/images/(.*)',   tornado.web.StaticFileHandler, {'path': 'assets/images/' }),

@@ -55,6 +55,7 @@ $( ".course_selecter" ).change(function() {
         $('.section_selecter').html('');
         return; // do nothing
     }
+	alert('lol');
     $.post("/getSections",{ coursecode : $(".course_selecter").val() },
         function(data, status){
             var section_selecter = $(".section_selecter");
@@ -119,16 +120,16 @@ $(document.body).on('submit','.manage',function(event) {
 			break;
 		case STATES.SECTION:
 			//TODO: Add create section post request
-			var data = {
+			var data2 = {
 				courseCode : 	$(".course_selecter").val() ,
 				sectionCode : 	$(".addSection").find("input[name='sectionCode']").val(),
 				year : 			$(".addSection").find("input[name='year']").val(),
-				semester : 		$(".addSection").find("input[name='semester']").val(),
-				weekday : 		$(".addSection").find("input[name='weekday']").val(),
+				semester : 		$(".semester_selecter").val(),
+				weekday : 		$(".weekday_selecter").val() ,
 				startTime : 	$(".addSection").find("input[name='startTime']").val(),
 				endTime : 		$(".addSection").find("input[name='endTime']").val()
 			};
-			$.post("/addSection",data,function(data, status){
+			$.post("/addSection",data2,function(data2, status){
 				//TODO: Handle submission
 				alert("sent");
 			});

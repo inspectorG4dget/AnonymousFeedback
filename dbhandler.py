@@ -24,6 +24,7 @@ db = config.get("Default", "database")
 conn = pg8000.connect(host=ip, port=port,user=username, password=pwd, database=db)
 
 
+
 def getCourses():
     t=conn.cursor()
     t.execute("""SELECT * FROM course""")
@@ -32,10 +33,27 @@ def getCourses():
     return t.fetchall()
 
 
-def getSections(courseCode, year, semester):
+def getSections(courseCode, year, semester, active):
     t=conn.cursor()
-    t.execute("""SELECT sectionID, weekday, startTime, endTime FROM section WHERE course=%s AND currYear=%s AND semester=%s""", (courseCode, year, semester))
+    if active is True:
+        t.execute("""SELECT sectionID, weekday, startTime, endTime
+                FROM section, teaches
+                WHERE section.course=%s
+                    AND section.currYear=%s
+                    AND section.semester=%s
+                    AND teaches.currYear=section.currYear
+                    AND teaches.semester=section.semester
+                    AND teaches.course=section.course""",
+                    (courseCode, year, semester))
+    else :
+        t.execute("""SELECT sectionID, weekday, startTime, endTime
+                FROM section
+                WHERE course=%s
+                    AND currYear=%s
+                    AND semester=%s""",
+                    (courseCode, year, semester))
     conn.commit()
+    
     return t.fetchall()
 
 
@@ -51,8 +69,7 @@ def getSectionTA(courseCode, sectionCode, year, semester):
     conn.commit()
     return t.fetchall()
 
-
-def createTA(stnum, fname, lname, profilepic):
+def createTA(stnum, fname, lname,  profilepic):
     t=conn.cursor()
     t.execute("""INSERT INTO ta(stnum,firstname, lastname, profilepic) VALUES (%s,%s,%s,%s)""", (stnum, fname, lname, profilepic))
     conn.commit()
@@ -63,9 +80,10 @@ def createCourse(courseCode):
     conn.commit()
 
 #def createSection(courseCode, sectionCode, year, semester, weekday, startTime, endTime):
-def createSection(courseCode):
+def createSection(courseCode, sectionCode, year, semester, weekday, startTime, endTime):
     t=conn.cursor()
-    t.execute("""INSERT INTO section(course, sectionID, year, semester, weekday, startTime, endTime) VALUES (%s, %s, %s)""", (courseCode, sectionCode, year, semester, weekday, startTime, endTime))
+    t.execute("""INSERT INTO section(course, sectionID,  currYear, semester, weekday, startTime, endTime) VALUES (%s, %s, %s, %s ,%s,%s,%s)""",
+        (courseCode, sectionCode, year, semester, weekday, startTime, endTime,))
     conn.commit()
 
 
@@ -94,13 +112,13 @@ def getCourseFeedbacks(form):
     year, semester = getYearSemester()
 
     query = """SELECT FEEDBACK.course, section, firstName, lastName, q1, q2, q3, feedback
-				FROM FEEDBACK,TA,SECTION
-				WHERE FEEDBACK.taID=TA.stnum
-					AND SECTION.course=FEEDBACK.course
-					AND SECTION.sectionid=FEEDBACK.section
-					AND FEEDBACK.course=%s
-					AND section.currYear=%s
-					AND section.semester=%s"""
+                FROM FEEDBACK,TA,SECTION
+                WHERE FEEDBACK.taID=TA.stnum
+                    AND SECTION.course=FEEDBACK.course
+                    AND SECTION.sectionid=FEEDBACK.section
+                    AND FEEDBACK.course=%s
+                    AND section.currYear=%s
+                    AND section.semester=%s"""
     t = conn.cursor()
     t.execute(query, (courseCode, year, semester))
     conn.commit()
@@ -115,10 +133,10 @@ def getCourseFeedbacks(form):
 
 
 def getAllTAs():
-    query = """SELECT taid, firstname, lastname from TA"""
+    query = """SELECT stnum, firstname, lastname from TA"""
     t = conn.cursor()
     t.execute(query)
     conn.commit()
     tas = t.fetchall()
 
-    return [(taid, ' '.join(row[1:])) for row in tas]
+    return [(str(row[0]), ' '.join(row[1:])) for row in tas]
