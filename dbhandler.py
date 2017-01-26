@@ -36,7 +36,7 @@ def getCourses():
 def getSections(courseCode, year, semester, active):
     t=conn.cursor()
     if active is True:
-        t.execute("""SELECT sectionID, weekday, startTime, endTime
+        t.execute("""SELECT DISTINCT sectionID, weekday, startTime, endTime
                 FROM section, teaches
                 WHERE section.course=%s
                     AND section.currYear=%s
@@ -53,7 +53,6 @@ def getSections(courseCode, year, semester, active):
                     AND semester=%s""",
                     (courseCode, year, semester))
     conn.commit()
-    
     return t.fetchall()
 
 

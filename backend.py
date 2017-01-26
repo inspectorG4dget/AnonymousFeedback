@@ -73,10 +73,8 @@ class GetSectionsHandler(tornado.web.RequestHandler):
             results[i][2] = startTime.strftime("%H:%M")
             results[i][3] = endTime.strftime("%H:%M")
 
-
         self.write(json.dumps({"results":results}))
         self.finish()
-
 
 class GetSectionTAHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
@@ -94,7 +92,7 @@ class GetSectionTAHandler(tornado.web.RequestHandler):
         for i,(taID, fname, lname) in enumerate(results):
             name = "%s %s" %(fname, lname)
             results[i] = {"taID": str(taID), "name": name}
-        print results
+        print(results)
         self.write(json.dumps({"TAs":results}))
         self.finish()
 
