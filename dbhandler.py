@@ -126,8 +126,9 @@ def getCourseFeedbacks(courseCode, sectionCode):
                         AND SECTION.course=FEEDBACK.course
                         AND SECTION.sectionid=FEEDBACK.section
                         AND FEEDBACK.course=%s
+                        AND FEEDBACK.section=%s
                         AND section.currYear=%s
-                        AND section.semester=%s""", (courseCode, year, semester))
+                        AND section.semester=%s""", (courseCode, sectionCode, year, semester))
         conn.commit()
         raw_feedbacks = c.fetchall()
 
