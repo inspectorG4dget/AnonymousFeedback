@@ -12,7 +12,6 @@ import pg8000
 from datetime import datetime as dt
 from backend import getYearSemester
 
-
 config = CP.RawConfigParser()
 config.read('dbconn.conf')
 ip = config.get("Default", "IP")
@@ -93,42 +92,72 @@ def assignTAtoSection(taID, courseCode, sectionCode):
     conn.commit()
 
 
-def submitFeedback(feedbacks):
-    query = """INSERT INTO FEEDBACK (student, course, section, currYear, semester, taID, q1, q2, q3, feedback) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
-    idents = operator.itemgetter('student', 'course', 'section')(feedbacks)
-    idents += getYearSemester()
-
-    fetch = operator.itemgetter('taID', 'q1', 'q2', 'q3', 'feedback')
-    for feedback in feedbacks['feedback']:
-        t = conn.cursor()
-        t.execute(query, idents+fetch(feedback))
-        conn.commit()
-
-
-def getCourseFeedbacks(form):
-    courseCode = form['courseCode'][0]
-    sectionCode = form['sectionCode'][0]
+def submitFeedback(student_number, course_code, section, fb):
     year, semester = getYearSemester()
 
-    query = """SELECT FEEDBACK.course, section, firstName, lastName, q1, q2, q3, feedback
-                FROM FEEDBACK,TA,SECTION
-                WHERE FEEDBACK.taID=TA.stnum
-                    AND SECTION.course=FEEDBACK.course
-                    AND SECTION.sectionid=FEEDBACK.section
-                    AND FEEDBACK.course=%s
-                    AND section.currYear=%s
-                    AND section.semester=%s"""
-    t = conn.cursor()
-    t.execute(query, (courseCode, year, semester))
-    conn.commit()
-    feedbacks = t.fetchall()
-    answer = {"schema":['q1', 'q2', 'q3', 'feedback']}
-    for course, section, startTime, endTime, fname, lname, q1, q2, q3, feedback in feedbacks:
-        ta = "%s %s" %(fname, lname)
-        if ta not in answer: answer[ta] = {'section':section, 'course':course, 'startTime':startTime, 'endTime':endTime, 'feedback':[]}
-        answer[ta]['feedback'].append({'q1':q1, 'q2':q2, 'q3':q3, 'feedback':feedback})
+    # extract individual feedback fields
+    try:
+        taID, q1, q2, q3, feedback = fb['taID'], fb['q1'], fb['q2'], fb['q3'], fb['feedback']
+    except ValueError as e:
+        return 'ValueError in submitFeedback'
 
-    return {'feedback': answer}
+    c = conn.cursor()
+    try:
+        c.execute('''
+            INSERT INTO feedback
+                (student, course, section, currYear, semester, taID, q1, q2, q3, feedback) VALUES
+                (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)''' ,
+            (student_number, course_code, section, year, semester, taID, q1, q2, q3, feedback))
+        conn.commit()
+        return 'success'
+    except pg8000.ProgrammingError as e:
+        conn.rollback()
+        return 'pg8000.ProgrammingError in submitFeedback'
+
+def getCourseFeedbacks(courseCode, sectionCode):
+    year, semester = getYearSemester()
+    c = conn.cursor()
+
+    try:
+        c.execute("""
+                SELECT feedback.course, section, firstName, lastName, q1, q2, q3, feedback
+                    FROM feedback, ta, section
+                    WHERE FEEDBACK.taID=TA.stnum
+                        AND SECTION.course=FEEDBACK.course
+                        AND SECTION.sectionid=FEEDBACK.section
+                        AND FEEDBACK.course=%s
+                        AND FEEDBACK.section=%s
+                        AND section.currYear=%s
+                        AND section.semester=%s""", (courseCode, sectionCode, year, semester))
+        conn.commit()
+        raw_feedbacks = c.fetchall()
+
+    except pg8000.ProgrammingError as e:
+        print(e)
+        return 'pg8000.ProgrammingError in getCourseFeedbacks'
+
+    feedbacks = {}
+
+    # load all relevant feedback information into a dict of dicts (for easy deduplication server-side)
+    for course, section, fname, lname, q1, q2, q3, feedback in raw_feedbacks:
+        ta = '{0} {1}'.format(fname, lname)
+
+        if ta not in feedbacks.keys():
+            feedbacks[ta] = {
+                    'ta' : ta,
+                    'section' : section,
+                    'course' : course,
+                    'feedback' : []
+                }
+
+        feedbacks[ta]['feedback'].append([q1, q2, q3, feedback])
+
+    # the client is actually given a schema and a _list_ (not dict) of feedbacks sorted by TA with some metadata
+    # this is because it's easier to iterate over using an index than using a TA's name
+    return {
+            'schema' : ['q1', 'q2', 'q3', 'feedback'],
+            'feedbacks': feedbacks.values(),
+        }
 
 
 def getAllTAs():
