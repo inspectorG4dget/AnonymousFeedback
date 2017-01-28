@@ -47,67 +47,122 @@ $( ".action_selecter" ).change(function() {
     }
 });
 
+// fetches course sections from the /getSections endpoint given a course code
 $( ".course_selecter" ).change(function() {
 	if(state == STATES.SECTION){
 		return; // do nothing
 	}
-    if($(".course_selecter").val() == "None") {
+
+	// no course is selected
+    if($(".course_selecter").val() === "None") {
         $('.section_selecter').html('');
         return; // do nothing
     }
-	alert('lol');
+
+    // a course is selected, fetech data from the API and load it into a table
     $.post("/getSections",{ coursecode : $(".course_selecter").val() },
         function(data, status){
-            var section_selecter = $(".section_selecter");
-            section_selecter.val("");
-            section_selecter.html('');
-            data = $.parseJSON(data);
-            section_selecter.append('<option value="None">None</option>');
-            for(let time of data.results){
-                section_selecter.append('<option value="'+time+'">'+time+'</option>');
-            }
-            $('#course_code').val($(".course_select").val());
+			
+			// data is returned as a 1-key dict with a list of lists
+			var sections = $.parseJSON(data)['results'];
+
+			// query DOM for section selector dropdown
+			var section_selector = $('.section_selecter');
+
+			// clear the section dropdown as it may store previous sections
+			section_selector.empty();
+
+			// load the sections into the next dropdown
+			for (var i = 0; i < sections.length; i++) {
+				var option = document.createElement('option');
+				option.value = sections[i][0];
+				option.innerHTML = sections[i][0];
+				section_selector.append(option);
+			}
         });
 });
 
+// helper function used to generate table rows of a given width `w`.
+// helps avoid too-deeply nested functions inside onsubmit handler.
+// loads cells `w` cells into a list to be manipulated directly
+function generateTableRow(w) {
+	var rp = []
+	for (var i = 0; i < w; i++) {
+		rp.push(document.createElement('td'));
+	}
+	return rp;
+}
+
+// GUM (grand unified multiplexer) for handling form submissions in the Professor view
+// essentially a big multiplexer
 $(document.body).on('submit','.manage',function(event) {
-	event.preventDefault();
+	event.preventDefault();	
+
 	switch(state){
+
+		// feedback is requested for a given section
 		case STATES.FEEDBACK:
-			//TODO: Add get feedback post request
+			var table = document.getElementsByClassName('data_table')[0];
+			table.innerHTML = '';
+	
+			// scrape form data
 			var data = {
 				courseCode : $(".course_selecter").val() ,
 				sectionCode : $(".section_selecter").val()
 			};
-			$.post('/viewFeedBack',data, function(data, status) {
-				alert("hello");
-				var schema = data['feedback']['schema'];
-				var obj = {
-				   schema: schema,
-				   rows: []
-				}
 
-				$.each(data['feedback'], function(ta, stats) {
-					// create title for table
-					var course = stats['course'];
-					var section = stats['section'];
-					var starTime = stats['startTime'];
-					var endTime = stats['endTime'];
-					var feedback = stats['feedback'];
+			// send Ajax request to /viewFeedback endpoint
+			$.post('/viewFeedBack', data, function(raw_data, status) {
 
-					// create object containing rows, so we can write to the table
-					$.forEach(feedback,function(stat) {
-						var q1 = stat['q1'];
-						var q2 = stat['q2'];
-						var q3 = stat['q3'];
-						var notes = stats['feedback'];
-						obj.rows.push([q1, q2, q3, notes]);
-					});
-					alert(JSON.stringify(obj));
-					createTable(obj);
+				// save table schema
+				var resp = {
+				   schema : $.parseJSON(raw_data).data.schema,
+				   data : $.parseJSON(raw_data).data.feedbacks,
+				};
+
+				/*
+				 *var table = document.getElementsByClassName('data_table')[0];
+				 *table.innerHTML = '';
+				 */
+				var table_header = document.createElement('th');
+
+				// load data into HTML table
+				// initialize headers
+				resp.schema.map(function(cv, i, _) {
+					var node = document.createElement('td');
+					node.innerHTML = cv;
+					table_header.appendChild(node);
 				});
+				
+				// load feedback into an HTML table
+				// c_ta is a single TA object
+				resp.data.map(function(c_ta, i, _) {
+
+
+					// map over a TA's feedback list (of lists)
+					c_ta.feedback.map(function(c_fb, j, _) {
+						
+						// create _n_ raw table cells
+						var trp = generateTableRow(resp.schema.length);
+						var tr = document.createElement('tr');	
+
+						// map over the individual feedback items
+						// load them into cells and drop them into a row
+						c_fb.map(function(c_col, k, _) {
+							trp[k].innerHTML = c_col;
+							tr.appendChild(trp[k]);
+						});
+
+						// append the row to a table
+						table.appendChild(tr);
+					});
+				});
+	
+				document.getElementsByClassName('data_view')[0].style.display = 'block';
 			});
 			break;
+
+		// course list is requested
 		case STATES.COURSE:
 			//TODO: Add create course post request
 			var data = {
@@ -118,6 +173,8 @@ $(document.body).on('submit','.manage',function(event) {
 				alert("sent");
 			});
 			break;
+
+		// a listing of sections of a course is requested
 		case STATES.SECTION:
 			//TODO: Add create section post request
 			var data2 = {
@@ -134,6 +191,8 @@ $(document.body).on('submit','.manage',function(event) {
 				alert("sent");
 			});
 			break;
+
+		// a list of TAs is requested
 		case STATES.TA:
 			var data = {
 				fname : $(".addTA").find("input[name='fname']").val(),
@@ -146,6 +205,8 @@ $(document.body).on('submit','.manage',function(event) {
 				alert("sent");
 			});
 			break;
+
+		// ?
 		case STATES.ASSIGN:
 			//TODO: Add assign ta post request
 			var data = {

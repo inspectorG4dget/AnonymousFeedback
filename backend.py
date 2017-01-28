@@ -12,15 +12,8 @@ import json
 
 from datetime import datetime as dt
 
-def getYearSemester(year=None, month=None):
-    today = dt.today()
-    if year is None:
-        year = today.year
-    if month is None:
-        month = today.month
-
+def getYearSemester(year=dt.today().year, month=dt.today().month):
     semester = {0:2, 1:3, 2:1, 3:1}[month//4]
-
     return year, semester
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -48,8 +41,17 @@ class ManageHandler(tornado.web.RequestHandler):
 class SubmitFeedbackHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
     def post(self):
-        dbhandler.submitFeedback(json.loads(self.request.body))
-        self.write('{success}')
+        payload = json.loads(self.request.body)
+        try:
+            student_number = payload['student']
+            course_code = payload['course']
+            section = payload['section']
+            feedback = payload['feedback']
+        except KeyError as e:
+            print(e)
+            status = 'Missing argument: {0}'.format(e.args[0])
+        status = dbhandler.submitFeedback(student_number, course_code, section, feedback[0])
+        self.write(json.dumps({'status' : status}))
         self.finish()
 
 class GetCoursesHandler(tornado.web.RequestHandler):
@@ -92,7 +94,6 @@ class GetSectionTAHandler(tornado.web.RequestHandler):
         for i,(taID, fname, lname) in enumerate(results):
             name = "%s %s" %(fname, lname)
             results[i] = {"taID": str(taID), "name": name}
-        print(results)
         self.write(json.dumps({"TAs":results}))
         self.finish()
 
@@ -100,8 +101,25 @@ class GetSectionTAHandler(tornado.web.RequestHandler):
 class ViewFeedbackHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
     def post(self):
-        x = dbhandler.getCourseFeedbacks(self.request.arguments)
-        self.write(json.dumps(x))
+        try:
+            course_code = self.get_argument('courseCode')
+            section_code = self.get_argument('sectionCode')
+        except KeyError as e:
+            print(e)
+
+        # pull data or an error from the database
+        data = dbhandler.getCourseFeedbacks(course_code, section_code)
+
+        # do triage on the returned data : error if it's a string, success if it's a dict
+        if type(data) == str: status = 'error'
+        else: status = 'success'
+
+        # pass the information on to the client
+        self.write(json.dumps({
+            'status' : status,
+            'data' : data
+        }))
+
         self.finish()
 
 class AddCourseHandler(tornado.web.RequestHandler):
@@ -112,7 +130,6 @@ class AddCourseHandler(tornado.web.RequestHandler):
 class AddSectionHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
     def post(self):
-        print(self.request.arguments)
         courseCode = self.get_argument('courseCode')
         sectionCode = self.get_argument('sectionCode')
         year = self.get_argument('year')
