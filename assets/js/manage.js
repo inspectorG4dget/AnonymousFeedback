@@ -119,25 +119,21 @@ $(document.body).on('submit','.manage',function(event) {
 				   schema : $.parseJSON(raw_data).data.schema,
 				   data : $.parseJSON(raw_data).data.feedbacks,
 				};
-
-				/*
-				 *var table = document.getElementsByClassName('data_table')[0];
-				 *table.innerHTML = '';
-				 */
-				var table_header = document.createElement('th');
-
-				// load data into HTML table
-				// initialize headers
-				resp.schema.map(function(cv, i, _) {
-					var node = document.createElement('td');
-					node.innerHTML = cv;
-					table_header.appendChild(node);
-				});
-				
+	
 				// load feedback into an HTML table
 				// c_ta is a single TA object
 				resp.data.map(function(c_ta, i, _) {
-
+				
+					// initialize and load headers
+					var table_header = document.createElement('tr');
+					
+					resp.schema.map(function(cv, i, _) {
+						var node = document.createElement('th');
+						node.innerHTML = cv;
+						table_header.appendChild(node);
+					});
+					
+					table.appendChild(table_header);
 
 					// map over a TA's feedback list (of lists)
 					c_ta.feedback.map(function(c_fb, j, _) {
