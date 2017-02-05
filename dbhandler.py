@@ -85,7 +85,7 @@ def getSectionTA(courseCode, sectionCode, year=getYearSemester()[0], semester=ge
 def createTA(stnum, fname, lname,  profilepic):
     c = conn.cursor()
     try:
-        c.execute("""INSERT INTO ta(stnum,firstname, lastname, profilepic) VALUES (%s,%s,%s,%s)""", (stnum, fname, lname, profilepic))
+        c.execute("""INSERT INTO ta (stnum, firstname, lastname, profilepic) VALUES (%s,%s,%s,%s)""", (stnum, fname, lname, profilepic))
         conn.commit()
     except pg8000.ProgrammingError as e:
         print(e)

@@ -247,20 +247,35 @@ submit_btn_2.addEventListener('click', (e) => {
 /*************
  * TAB 4 - ADD A TA
  * **********/
-let ta_name_3 = document.getElementById('ta_name_3');
+let ta_fname_3 = document.getElementById('ta_fname_3');
+let ta_lname_3 = document.getElementById('ta_lname_3');
 let student_number_3 = document.getElementById('ta_number_3');
 let profile_picture_3 = document.getElementById('profile_picture_3');
 
-var [ta_name_valid_3, student_number_valid_3, profile_picture_valid_3] = [false, false, false];
+let submit_btn_3 = document.getElementById('submit_btn_3');
 
-ta_name_3.addEventListener('input', (e) => {
-	if ( ta_name_3.value != '' ) {
-		ta_name_valid_3 = true;
-		if ( ta_name_valid_3 && student_number_valid_3 && profile_picture_valid_3 ) {
+let [ta_fname_valid_3, ta_lname_valid_3, student_number_valid_3, profile_picture_valid_3] = [false, false, false];
+
+ta_fname_3.addEventListener('input', (e) => {
+	if ( ta_fname_3.value != '' ) {
+		ta_fname_valid_3 = true;
+		if ( ta_fname_valid_3 && ta_lname_valid_3 && student_number_valid_3 && profile_picture_valid_3 ) {
 			submit_btn_3.disabled = false;
 		}
 	} else {
-		ta_name_valid_3 = false;
+		ta_fname_valid_3 = false;
+		submit_btn_3.disabled = true;
+	}
+});
+
+ta_lname_3.addEventListener('input', (e) => {
+	if ( ta_lname_3.value != '' ) {
+		ta_lname_valid_3 = true;
+		if ( ta_fname_valid_3 && ta_lname_valid_3 && student_number_valid_3 && profile_picture_valid_3 ) {
+			submit_btn_3.disabled = false;
+		}
+	} else {
+		ta_lname_valid_3 = false;
 		submit_btn_3.disabled = true;
 	}
 });
@@ -268,7 +283,7 @@ ta_name_3.addEventListener('input', (e) => {
 student_number_3.addEventListener('input', (e) => {
 	if ( student_number_3.value.match(/^\d{7}$/) ) {
 		student_number_valid_3 = true;
-		if ( ta_name_valid_3 && student_number_valid_3 && profile_picture_valid_3 ) {
+		if ( ta_fname_valid_3 && ta_lname_valid_3 && student_number_valid_3 && profile_picture_valid_3 ) {
 			submit_btn_3.disabled = false;
 		}
 	} else {
@@ -280,13 +295,17 @@ student_number_3.addEventListener('input', (e) => {
 profile_picture_3.addEventListener('input', (e) => {
 	if ( profile_picture_3.value != '' ) {
 		profile_picture_valid_3 = true;
-		if ( ta_name_valid_3 && student_number_valid_3 && profile_picture_valid_3 ) {
+		if ( ta_fname_valid_3 && student_number_valid_3 && profile_picture_valid_3 ) {
 			submit_btn_3.disabled = false;
 		}
 	} else {
 		profile_picture_valid_3 = false;
 		submit_btn_3.disabled = true;
 	}
+});
+
+submit_btn_3.addEventListener('click', (e) => {
+	put_ta(ta_fname_3.value, ta_lname_3.value, ta_number_3.value, profile_picture_3.value);
 });
 
 /*************
@@ -618,9 +637,9 @@ function put_section(course_code, section_id, year, semester, weekday, start_tim
 	xhr.send();
 }
 
-function put_ta(name, student_no, profile_picture) {
+function put_ta(fname, lname, student_no, profile_picture) {
 	let xhr = new XMLHttpRequest();
-	xhr.open('PUT', '/addTA?name=' + name + '&student_no=' + student_no + '&profile_picture=' + profile_picture);
+	xhr.open('PUT', '/addTA?fname=' + fname + '&lname=' + lname + '&student_no=' + student_no + '&profile_picture=' + profile_picture);
 	xhr.send();
 }
 

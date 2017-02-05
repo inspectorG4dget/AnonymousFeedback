@@ -171,8 +171,12 @@ class AddSectionHandler(tornado.web.RequestHandler):
 
 class AddTAHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
-    def post(self):
-        dbhandler.createTA(self.request.arguments)
+    def put(self):
+        ta_fname = self.get_argument('fname')
+        ta_lname = self.get_argument('lname')
+        ta_num = self.get_argument('student_no')
+        profile_pic_url = self.get_argument('profile_picture')
+        dbhandler.createTA(ta_num, ta_fname, ta_lname, profile_pic_url)
 
 class AssignTAHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
