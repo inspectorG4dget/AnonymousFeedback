@@ -30,7 +30,7 @@ class FeedBackHandler(tornado.web.RequestHandler):
     def get(self):
         courses= dbhandler.getCourses()
         courses_u = [str(k[0]) for k in courses]
-        self.render("assets/student.html",courses=courses_u )
+        self.render("assets/feedback.html")
 
 class ManageHandler(tornado.web.RequestHandler):
     def get(self):
@@ -43,16 +43,15 @@ class ManageHandler(tornado.web.RequestHandler):
 class SubmitFeedbackHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
     def post(self):
-        payload = json.loads(self.request.body)
-        try:
-            student_number = payload['student']
-            course_code = payload['course']
-            section = payload['section']
-            feedback = payload['feedback']
-        except KeyError as e:
-            print(e)
-            status = 'Missing argument: {0}'.format(e.args[0])
-        status = dbhandler.submitFeedback(student_number, course_code, section, feedback[0])
+        student_number = self.get_argument('student_number')
+        course_code = self.get_argument('course_code')
+        section_id = self.get_argument('section_id')
+        ta_id = self.get_argument('ta_id')
+        q1 = self.get_argument('q1')
+        q2 = self.get_argument('q2')
+        q3 = self.get_argument('q3')
+        feedback = self.get_argument('feedback')
+        status = dbhandler.submitFeedback(student_number, course_code, section_id, ta_id, q1, q2, q3, feedback)
         self.write(json.dumps({'status' : status}))
         self.finish()
 
@@ -212,7 +211,7 @@ class AnonymousFeedback(tornado.web.Application):
                 (r'/feedback',              FeedBackHandler),
                 (r'/manage',                ManageHandler),
                 # asynchronous API end poins
-                (r'/submitFeedBack',        SubmitFeedbackHandler),
+                (r'/submitFeedback',        SubmitFeedbackHandler),
                 (r'/getSections',           GetSectionsHandler),
                 (r'/getCourses',            GetCoursesHandler),
                 (r'/addCourse',             AddCourseHandler),

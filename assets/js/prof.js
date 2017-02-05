@@ -76,7 +76,6 @@ view_feedback_view.addEventListener('click', (e) => {
 
 	// populate the courses dropdown and pass calbacks to populate subsequent ones
 	get_courses('select_course_0', [populate_select, get_sections]);
-	//get_sections(select_course_0.value, 'select_section_0', populate_select);
 });
 add_course_view.addEventListener('click', (e) => {
 	active_tab_number = 1;
@@ -111,8 +110,12 @@ assign_ta_view.addEventListener('click', (e) => {
 
 // logic used to detect the currently active tab and set page state based on that
 let nav = [view_feedback_view, add_course_view, add_section_view, add_ta_view, assign_ta_view];
+let click = new Event('click');
+
 nav.map((curr_tab, i, _) => {
-	if ( curr_tab.parentNode.classList.toString() === "active" ) {
+	if ( curr_tab.parentNode.classList.toString() === 'active' ) {
+		activate_tab(curr_tab.id);
+		curr_tab.dispatchEvent(click);
 		nav[i] = 1;
 	} else {
 		nav[i] = 0;
@@ -306,42 +309,33 @@ submit_btn_4.addEventListener('click', (e) => {
 /******************************************************
 * initialize the correct view based on the active tab *
 *******************************************************/
-let click = new Event('click');
 let change = new Event('change');
+
+// TODO figure out if there's a reliable way to dedup this code
 
 // "View Feedback"
 if ( nav[0] === 1 ) {
 	init_view('view_feedback');
-	activate_tab('nav_feedback');
-	view_feedback_view.dispatchEvent(click);
 }
 
 // "Add a course"
 else if ( nav[1] === 1 ) {
 	init_view('add_course');
-	activate_tab('nav_course');
-	add_course_view.dispatchEvent(click);
 }
 
 // "Add a section"
 else if ( nav[2] === 1 ) {
 	init_view('add_section');
-	activate_tab('nav_section');
-	add_section_view.dispatchEvent(click);
 }
 
 // "Add a TA"
 else if ( nav[3] === 1 ) {
 	init_view('add_ta');
-	activate_tab('nav_ta');
-	add_ta_view.dispatchEvent(click);
 }
 
-// "Assign a TA"
+// "Assign a TA"kj/kk
 else if ( nav[4] === 1 ) {
 	init_view('assign_ta');
-	activate_tab('nav_assign');
-	assign_ta_view.dispatchEvent(click);
 }
 
 else {

@@ -5,7 +5,7 @@ $( ".course_select" ).change(function() {
         return;
     }
 	var course_code = $(".course_select").val();
-    $.post("/getSections",{ coursecode : course_code },
+    $.get("/getSections",{ coursecode : course_code },
         function(data, status){
             var sections_list = $(".sections_list");
             $('#section_code').val("");
@@ -28,7 +28,7 @@ $(document.body).on('change','.section',function() {
 			course : $("input[name=course_code]").val(),
 			section : $("input[name=section_code]").val()
 		};
-		$.post("/getSectionTAs",input,function(data,status){
+		$.get("/getSectionTAs",input,function(data,status){
 			data = $.parseJSON(data);
 			var fields = $(".fields");
 			fields.html('');

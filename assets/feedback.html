@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en_CA">
+	<head>
+		<title>Feedbadck Management</title>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<body>
+		<nav class="navbar navbar-inverse navbar-static-top" role="main">
+			<div class="container">
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+					<span class="sr-only">Toggle navigation</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					</button>
+					<a class="navbar-brand" href="/">AF Management</a>
+				</div>
+				<div id="navbar" class="collapse navbar-collapse">
+					<ul class="nav navbar-nav">
+						<li class="active"><a href="#" id="nav_feedback">Submit feedback</a></li>
+						<li><a href="#" id="nav_profiles">TA Profiles</a></li>
+					</ul>
+				</div><!--/.nav-collapse -->
+			</div>
+		</nav>
+
+		<div class="container" id="send_feedback">
+			<form>
+				<div class="form-group">
+					<label for="input_student_number_0">Input your student number</label>
+					<input type="number" name="input_student_number_0" class="form-control" id="input_student_number_0" placeholder="1111111" required>	
+				</div>
+
+				<div class="form-group">
+					<label for="select_course_0">Select a course</label>
+					<select name="select_course_0" class="form-control" id="select_course_0" disabled required>
+						<option>Loading courses...</option>
+					</select>
+				</div>
+				<div class="form-group">
+					<label for="select_section_0">Select a section</label>
+					<select name="select_section_0" class="form-control" id="select_section_0" disabled required>
+						<option>Select a course first</option>
+					</select>
+				</div>
+				<div class="form-group">
+					<label for="select_ta_0">Select a TA</label>
+					<select name="select_ta_0" class="form-control" id="select_ta_0" required disabled>
+						<option>Select a section first</option>
+					</select>
+				</div>
+
+				<div class="form-group">
+					<label for="q1_0">How often was the TA prepared? (<span id="q1_val_0">Currently: 5</span>)</label>
+					<input type="range" class="form-control" id="q1_0" name="q1" min="1" max="10" step="1" value="5">
+				</div>
+				<div class="form-group">
+					<label for="q2_0">How familiar was the TA with the subject matter? (<span id="q2_val_0">Currently: 5</span>)</label>
+					<input type="range" class="form-control" id="q2_0" name="q2" min="1" max="10" step="1" value="5">
+				</div>
+				<div class="form-group">
+					<label for="q3_0">How relevant was the lab/DGD material to what was discussed in the lectures? (<span id="q3_val_0">Currently: 5<span></label>
+					<input type="range" class="form-control" id="q3_0" name="q3" min="1" max="10" step="1" value="5">
+				</div>
+				<div class="form-group">
+					<label for="feedback_0">Use this field to write down any additional comments you have about this TA.</label>
+					<textarea id="feedback_0" class="form-control" rows="3"></textarea>
+				</div>
+
+				<button type="button" class="btn btn-primary btn-block" id="submit_btn_0" disabled>Submit Feedback</button>
+			</form>
+
+			
+		</div>  <!-- /#send_feedback -->
+
+		<div class="container" id="view_profiles" style="display:none;">
+
+		</div>  <!-- /#view_profiles -->
+	</body>
+
+	<script src="/js/student.js"></script>
+</html>
+
