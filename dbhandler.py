@@ -8,34 +8,35 @@
 import ConfigParser as CP
 import operator
 import pg8000
+import toml
 
 from datetime import datetime as dt
 from backend import getYearSemester
 
 config = CP.RawConfigParser()
 config.read('dbconn.conf')
-ip = config.get("Default", "IP")
-port = config.getint("Default", "port")
-username = config.get("Default", "user")
-pwd = config.get("Default", "password")
-db = config.get("Default", "database")
+# conf = toml.load('dbconn.toml')
+
+ip          = config.get("Default", "IP")
+port        = config.getint("Default", "port")
+username    = config.get("Default", "user")
+pwd         = config.get("Default", "password")
+db          = config.get("Default", "database")
 
 conn = pg8000.connect(host=ip, port=port,user=username, password=pwd, database=db)
 
-
-
 def getCourses():
-    t=conn.cursor()
-    t.execute("""SELECT * FROM course""")
+    c = conn.cursor()
+    c.execute("""SELECT * FROM course""")
     conn.commit()
     #inserted new user
-    return t.fetchall()
+    return c.fetchall()
 
 
 def getSections(courseCode, year, semester, active):
-    t=conn.cursor()
+    c = conn.cursor()
     if active is True:
-        t.execute("""SELECT DISTINCT sectionID, weekday, startTime, endTime
+        c.execute("""SELECT DISTINCT sectionID, weekday, startTime, endTime
                 FROM section, teaches
                 WHERE section.course=%s
                     AND section.currYear=%s
@@ -45,19 +46,19 @@ def getSections(courseCode, year, semester, active):
                     AND teaches.course=section.course""",
                     (courseCode, year, semester))
     else :
-        t.execute("""SELECT sectionID, weekday, startTime, endTime
+        c.execute("""SELECT sectionID, weekday, startTime, endTime
                 FROM section
                 WHERE course=%s
                     AND currYear=%s
                     AND semester=%s""",
                     (courseCode, year, semester))
     conn.commit()
-    return t.fetchall()
+    res = c.fetchall()
+    return res
 
-
-def getSectionTA(courseCode, sectionCode, year, semester):
-    t = conn.cursor()
-    t.execute('''SELECT taID, firstName, lastName
+def getSectionTA(courseCode, sectionCode, year=getYearSemester()[0], semester=getYearSemester()[1]):
+    c = conn.cursor()
+    c.execute('''SELECT taID, firstName, lastName
                 FROM TA, TEACHES
                 WHERE TA.stnum=TEACHES.taID
                     AND TEACHES.course=%s
@@ -65,32 +66,42 @@ def getSectionTA(courseCode, sectionCode, year, semester):
                     AND TEACHES.currYear=%s
                     AND TEACHES.semester=%s''', (courseCode, sectionCode, year, semester,))
     conn.commit()
-    return t.fetchall()
+    return c.fetchall()
 
 def createTA(stnum, fname, lname,  profilepic):
-    t=conn.cursor()
-    t.execute("""INSERT INTO ta(stnum,firstname, lastname, profilepic) VALUES (%s,%s,%s,%s)""", (stnum, fname, lname, profilepic))
+    c = conn.cursor()
+    c.execute("""INSERT INTO ta(stnum,firstname, lastname, profilepic) VALUES (%s,%s,%s,%s)""", (stnum, fname, lname, profilepic))
     conn.commit()
 
 def createCourse(courseCode):
-    t=conn.cursor()
-    t.execute("""INSERT INTO course(code) VALUES (%s)""", (courseCode,))
-    conn.commit()
+    c = conn.cursor()
+    try:
+        c.execute("""INSERT INTO course(code) VALUES (%s)""", (courseCode,))
+        conn.commit()
+        return True
+    except pg8000.ProgrammingError:
+        conn.rollback()
+        return False
 
 #def createSection(courseCode, sectionCode, year, semester, weekday, startTime, endTime):
 def createSection(courseCode, sectionCode, year, semester, weekday, startTime, endTime):
-    t=conn.cursor()
-    t.execute("""INSERT INTO section(course, sectionID,  currYear, semester, weekday, startTime, endTime) VALUES (%s, %s, %s, %s ,%s,%s,%s)""",
+    c = conn.cursor()
+    c.execute("""INSERT INTO section(course, sectionID,  currYear, semester, weekday, startTime, endTime) VALUES (%s, %s, %s, %s ,%s,%s,%s)""",
         (courseCode, sectionCode, year, semester, weekday, startTime, endTime,))
     conn.commit()
 
-
-def assignTAtoSection(taID, courseCode, sectionCode):
-    t=conn.cursor()
-    year, semester = getYearSemester()
-    t.execute("""INSERT INTO teaches(taid, course, section, year, semester) VALUES (%s, %s, %s, %s, %s)""", (taID, courseCode, sectionCode, year, semester))
-    conn.commit()
-
+def assign_ta_to_section(ta_id, course_code, section_id):
+    c = conn.cursor()
+    try:
+        year, semester = getYearSemester()
+        c.execute("""INSERT INTO teaches(taid, course, section, curryear, semester) VALUES (%s, %s, %s, %s, %s)""",
+                (ta_id, course_code, section_id, year, semester))
+        conn.commit()
+        print "Success!"
+    except pg8000.ProgrammingError as e:
+        conn.rollback()
+        print e
+        print "Fail!"
 
 def submitFeedback(student_number, course_code, section, fb):
     year, semester = getYearSemester()
@@ -112,7 +123,7 @@ def submitFeedback(student_number, course_code, section, fb):
         return 'success'
     except pg8000.ProgrammingError as e:
         conn.rollback()
-        return 'pg8000.ProgrammingError in submitFeedback'
+        return 'fail'
 
 def getCourseFeedbacks(courseCode, sectionCode):
     year, semester = getYearSemester()
@@ -162,9 +173,9 @@ def getCourseFeedbacks(courseCode, sectionCode):
 
 def getAllTAs():
     query = """SELECT stnum, firstname, lastname from TA"""
-    t = conn.cursor()
-    t.execute(query)
+    c = conn.cursor()
+    c.execute(query)
     conn.commit()
-    tas = t.fetchall()
+    tas = c.fetchall()
 
     return [(str(row[0]), ' '.join(row[1:])) for row in tas]

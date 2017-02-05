@@ -5,10 +5,12 @@
 # Version : v0.7
 #####
 
-import tornado.ioloop
-import tornado.web
+import datetime
 import dbhandler
 import json
+import re
+import tornado.ioloop
+import tornado.web
 
 from datetime import datetime as dt
 
@@ -56,33 +58,37 @@ class SubmitFeedbackHandler(tornado.web.RequestHandler):
 
 class GetCoursesHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
-    def post(self):
+    def get(self):
         courses= dbhandler.getCourses()
         courses_u = [str(k[0]) for k in courses]
-        self.write(json.dumps({"results":courses_u}))
+        self.write(json.dumps({'results' : courses_u}))
         self.finish()
 
 class GetSectionsHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
-    def post(self):
-        code=self.get_argument("coursecode")
+    def get(self):
+        course_code = self.get_argument('course_code')
+        try:
+            active = bool(int(self.get_argument('active')))
+        except:
+            active = True
 
         today = dt.today()
         year, semester = getYearSemester(today.year, today.month)
-        results = list(dbhandler.getSections(code, year, semester, active=True))
+        results = list(dbhandler.getSections(course_code, year, semester, active))
         for i, (sectionID, weekday, startTime, endTime) in enumerate(results):
             results[i][1] = str(weekday)
             results[i][2] = startTime.strftime("%H:%M")
             results[i][3] = endTime.strftime("%H:%M")
 
-        self.write(json.dumps({"results":results}))
+        self.write(json.dumps({'results' : results}))
         self.finish()
 
 class GetSectionTAHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
-    def post(self):
-        course = self.get_argument("course")
-        section = self.get_argument("section")
+    def get(self):
+        course_code = self.get_argument("course_code")
+        section_id = self.get_argument("section_id")
 
         today = dt.today()
         year, semester = getYearSemester(today.year, today.month)
@@ -90,17 +96,17 @@ class GetSectionTAHandler(tornado.web.RequestHandler):
             active = self.get_argument('active')
         except :
             active = False
-        results = list(dbhandler.getSectionTA(course, section, year, semester))
+        results = list(dbhandler.getSectionTA(course_code, section_id, year, semester))
         for i,(taID, fname, lname) in enumerate(results):
             name = "%s %s" %(fname, lname)
             results[i] = {"taID": str(taID), "name": name}
-        self.write(json.dumps({"TAs":results}))
+        self.write(json.dumps({'results' : results}))
         self.finish()
 
 
 class ViewFeedbackHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
-    def post(self):
+    def get(self):
         try:
             course_code = self.get_argument('courseCode')
             section_code = self.get_argument('sectionCode')
@@ -124,21 +130,45 @@ class ViewFeedbackHandler(tornado.web.RequestHandler):
 
 class AddCourseHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
-    def post(self):
-        dbhandler.createCourse(self.get_argument('courseCode'))
+    def put(self):
+        course_code = self.get_argument('course_code').upper()
+        if re.match(r'^[A-Z]{3}\d{4}', course_code):
+            if dbhandler.createCourse(course_code):
+                self.set_status(200)
+            else:
+                self.set_status(409)
+        else:
+            self.set_status(400)
+        self.finish()
 
 class AddSectionHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
-    def post(self):
-        courseCode = self.get_argument('courseCode')
-        sectionCode = self.get_argument('sectionCode')
-        year = self.get_argument('year')
+    def put(self):
+        flag = False
+        course_code = self.get_argument('course_code').upper()
+        if not re.match(r'^[A-Z]{3}\d{4}', course_code):
+            self.set_status(400)
+            flag = True
+        section_id = self.get_argument('section_id')
+        year = int(self.get_argument('year'))
+        if year < datetime.datetime.now().year:
+            self.set_status(400)
+            flag = True
         semester = self.get_argument('semester')
-        weekday = self.get_argument('weekday')
-        startTime = self.get_argument('startTime')
-        endTime = self.get_argument('endTime')
-        dbhandler.createSection(courseCode, sectionCode, year, semester, weekday, startTime, endTime)
-
+        semester = ['fall', 'winter', 'spring', 'summer'].index(semester) + 1
+        if not 1 <= semester <= 4:
+            self.set_status(400)
+            flag = True
+        weekday = self.get_argument('weekday').lower()
+        weekday = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].index(weekday) + 1
+        if not 1 <= weekday <= 7:
+            self.set_status(400)
+            flag = True
+        if not flag:
+            start_time = self.get_argument('start_time')
+            end_time = self.get_argument('end_time')
+            dbhandler.createSection(course_code, section_id, year, semester, weekday, start_time, end_time)
+        self.finish()
 
 class AddTAHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
@@ -148,17 +178,24 @@ class AddTAHandler(tornado.web.RequestHandler):
 class AssignTAHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
     def post(self):
-        dbhandler.getFeedBack(self.request.arguments)
-
+        ta_id = int(self.get_argument('ta_id'))
+        course_code = self.get_argument('course_code').upper()
+        section_id = self.get_argument('section_id').upper()
+        dbhandler.assign_ta_to_section(ta_id, course_code, section_id)
 
 class ListAllTAsHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
-    def post(self):
-        a = dbhandler.getAllTAs()
-        print(a)
-        self.write(json.dumps({"results":a}))
-        self.finish()
+    def get(self):
+        ta_list = []
+        tas = dbhandler.getAllTAs()
+        for (ta_id, name) in tas:
+            ta_list.append({
+                    'id' : ta_id,
+                    'name' : name
+                })
 
+        self.write(json.dumps({"results": ta_list}))
+        self.finish()
 
 ####
 # Tornado uses 'handlers' to take care of requests to certain URLs
@@ -166,33 +203,40 @@ class ListAllTAsHandler(tornado.web.RequestHandler):
 # Unfortunatly it means we need to be very granular with our handlers
 ####
 
-application = tornado.web.Application(
-    [
-    (r'/',              MainHandler),
-    (r'/feedback',      FeedBackHandler),
-    (r'/manage',        ManageHandler),
-    # asynchronous API end poins
-    (r'/submitFeedBack',SubmitFeedbackHandler),
-    (r'/getSections',   GetSectionsHandler),
-    (r'/getCourses',    GetCoursesHandler),
-    (r'/addCourse',     AddCourseHandler),
-    (r'/addSection',    AddSectionHandler),
-    (r'/addTA',         AddTAHandler),
-    (r'/assignTA',      AssignTAHandler),
-    (r'/viewFeedBack',  ViewFeedbackHandler),
-    (r'/getSectionTAs', GetSectionTAHandler),
-    (r'/getTA',     ListAllTAsHandler),
-    # Static asset handlers
-    (r'/(favicon.ico)', tornado.web.StaticFileHandler, {'path': 'assets/'        }),
-    (r'/images/(.*)',   tornado.web.StaticFileHandler, {'path': 'assets/images/' }),
-    (r'/fonts/(.*)',    tornado.web.StaticFileHandler, {'path': 'assets/fonts/'  }),
-    (r'/css/(.*)',      tornado.web.StaticFileHandler, {'path': 'assets/css/'    }),
-    (r'/js/(.*)',       tornado.web.StaticFileHandler, {'path': 'assets/js/'     })
-    ],cookie_secret="__TODO:_GENERATE_YOUR_OWN_RANDOM_VALUE_HERE__")
+# we subclass the Application class to configure some useful settings (like the cookie
+# secret and the debug option) more cleanly
+class AnonymousFeedback(tornado.web.Application):
+    def __init__(self, **overrides):
+        handlers = [
+                (r'/',                      MainHandler),
+                (r'/feedback',              FeedBackHandler),
+                (r'/manage',                ManageHandler),
+                # asynchronous API end poins
+                (r'/submitFeedBack',        SubmitFeedbackHandler),
+                (r'/getSections',           GetSectionsHandler),
+                (r'/getCourses',            GetCoursesHandler),
+                (r'/addCourse',             AddCourseHandler),
+                (r'/addSection',            AddSectionHandler),
+                (r'/addTA',                 AddTAHandler),
+                (r'/assignTA',              AssignTAHandler),
+                (r'/viewFeedBack',          ViewFeedbackHandler),
+                (r'/getSectionTAs',         GetSectionTAHandler),
+                (r'/getTA',                 ListAllTAsHandler),
+                # Static asset handlers
+                (r'/(favicon.ico)', tornado.web.StaticFileHandler, {'path': 'assets/'        }),
+                (r'/images/(.*)',   tornado.web.StaticFileHandler, {'path': 'assets/images/' }),
+                (r'/fonts/(.*)',    tornado.web.StaticFileHandler, {'path': 'assets/fonts/'  }),
+                (r'/svg/(.*)',      tornado.web.StaticFileHandler, {'path': 'assets/svg/'    }),
+                (r'/css/(.*)',      tornado.web.StaticFileHandler, {'path': 'assets/css/'    }),
+                (r'/js/(.*)',       tornado.web.StaticFileHandler, {'path': 'assets/js/'     })
+            ]
+        settings = {
+                'debug' : True,
+                'cookie_secret' : '9e3c8a18-1f36-4dc0-84d2-38ef3160528f'
+            }
+        tornado.web.Application.__init__(self, handlers, **settings)
 
-####
-# When you run python restaurant.py, this runs and starts the tornado listner
-####
 if __name__ == "__main__":
-    application.listen(8888)
+    app = AnonymousFeedback()
+    app.listen(8888)
     tornado.ioloop.IOLoop.instance().start()

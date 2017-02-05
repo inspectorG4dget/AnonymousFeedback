@@ -1,71 +1,194 @@
 <html>
-<head>
-    <title>FeedBack Management</title>
-    <link rel="stylesheet" href="css/styles.css">
-</head>
-<body>
-<div class="action_select">
-    <select class="action_selecter" name="action">
-        <option value='0'    >None</option>
-        <option value='1'    >View feedback</option>
-        <option value='2'    >Add Course   </option>
-        <option value='3'    >Add Section  </option>
-        <option value='4'    >Add TA       </option>
-        <option value='5'    >Assign TA    </option>
-    </select>
-</div>
-<div class="tool_bar">
-        <form class="manage" method="post">
-			<div class="course_list" style="display: none;">
-				<select class="course_selecter" name="course">
-            	</select>
-			</div>
-			<div class="section_list" style="display: none;">
-				<select class="section_selecter" name="section" >
-            	</select>
-			</div>
-			<div class="ta_list" style="display: none;">
-				<select class="ta_selecter" name="taID">
-				</select>
-			</div>
-			<div class="addCourse" style="display: none;">
-            	Course Code : <input type='text' name='courseCode' /> <br />
-			</div>
-			<div class="addSection" style="display: none;">
-            	Section Code : <input type='text' name='sectionCode' /> <br />
-				Year : <input type='text' name='year' /> <br />
-				Semester : 		<select class="semester_selecter" name='semester'>
-									<option value="1">Fall</option>
-									<option value="2">Winter</option>
-									<option value="3">Summer</option>
-								</select> <br />
-				Week Day : <select class="weekday_selecter" name='weekday'>
-									<option value="1">Monday</option>
-									<option value="2">Tuesday</option>
-									<option value="3">Wednesday</option>
-									<option value="4">Thursday</option>
-									<option value="5">Friday</option>
-								</select>  <br />
-            	Start Time : <input type='text' name='startTime' /> <br />
-            	End Time : <input type='text' name='endTime' /> <br />
-			</div>
-			<div class="addTA" style="display: none;">
-            	<table >
-                	<tr><th>First Name</th> <td><input type='text' name='fname' /></td></tr>
-                	<tr><th>Last Name</th> <td><input type='text' name='lname' /></td></tr>
-                	<tr><th>Student Number</th> <td><input type='text' name='stnum' /></td></tr>
-                	<tr><th>Profile Picture</th> <td><input type='text' name='profilePic'></td></tr>
-            	</table>
-			</div>
-            <input class="submit_button" type='submit' value='Submit' style="display: none;"/>
-        </form>
-</div>
-<div class="data_view" style="display: none;">
-    <table class="data_table">
+	<head>
+		<title>FeedBack Management</title>
+		<!--<link rel="stylesheet" href="css/cssa.css">-->
+		<!--<link rel="stylesheet" href="css/uottawa.css">-->
 
-    </table>
-</div>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.js"></script>
-<script src="js/manage.js"></script>
-</body>
+		<!-- Latest compiled and minified CSS -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+		<!-- Optional theme -->
+		<!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">-->
+
+	</head>
+	<body>
+
+		<nav class="navbar navbar-inverse navbar-static-top" role="main">
+			<div class="container">
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+						<span class="sr-only">Toggle navigation</span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+					</button>
+					<a class="navbar-brand" href="/">AF Management</a>
+				</div>
+				<div id="navbar" class="collapse navbar-collapse">
+					<ul class="nav navbar-nav">
+						<li class="active"><a href="#" id="nav_feedback">View Feedback</a></li>
+						<li><a href="#" id="nav_course"					>Add a course</a></li>
+						<li><a href="#" id="nav_section"				>Add a section</a></li>
+						<li><a href="#" id="nav_ta"						>Add a TA</a></li>
+						<li><a href="#" id="nav_assign"					>Assign a TA</a></li>
+					</ul>
+				</div><!--/.nav-collapse -->
+			</div>
+		</nav>
+
+		<div class="container" id="view_feedback">
+			<form>
+				<div class="form-group">
+					<label for="select_course_0">Select a course</label>
+					<select name="select_course_0" class="form-control" id="select_course_0" disabled required>
+
+					</select>
+				</div>
+				<div class="form-group">
+					<label for="select_section_0">Select a section</label>
+					<select name="select_section_0" class="form-control" id="select_section_0" disabled required>
+
+					</select>
+				</div>
+				<div class="form-group" style="display:none">
+					<label for="select_ta_0">Select a TA</label>
+					<select name="select_ta_0" class="form-control" id="select_ta_0" required>
+
+					</select>
+				</div>
+
+				<button type="button" class="btn btn-primary btn-block" id="submit_btn_0" disabled>View Feedback</button>
+			</form>
+
+			<h3 class="text-center" id="ta_name_0" display="none"></h3>
+			<table class="table table-hover table-striped table-bordered" id="data_table_0" style="display:none">
+				<thead>
+
+				</thead>
+				<tbody>
+
+				</tbody>
+			</table>
+		</div>  <!-- /#view_feedback -->
+
+		<div class="container" id="add_course" style="display:none">
+			<form>
+				<div class="form-group">
+					<label for="add_course_1">Add a new course</label>
+					<input type="text" class="form-control" id="add_course_1" placeholder="Course code" required>
+				</div>
+
+				<button type="button" class="btn btn-primary btn-block" id="submit_btn_1" disabled>Submit</button>
+			</form>
+			<span id="status_1"></span>
+		</div>  <!-- /#add_course -->
+
+		<div class="container" id="add_section" style="display:none">
+			<form>
+				<div class="form-group">
+					<label for="select_course_2">Select a course</label>
+					<select name="select_course_2" class="form-control" id="select_course_2" required>
+					
+					</select>
+				</div>  <!-- select related course -->
+
+				<div class="form-group">	
+					<label for="add_section_2">Add a DGD section number</label>
+					<input type="text" name="add_section_2" class="form-control" id="add_section_2" placeholder="Section number" required>
+				</div>  <!-- input a section number -->
+
+				<div class="form-group">
+					<label for="select_year_2">Select a year</label>
+					<input class="form-control" type="number" min="2017" step="1" value="2017" id='select_year_2' pattern="^\d+$" required>
+				</div>  <!-- select the year -->
+
+				<div class="form-group">
+					<label for="select_semester_2">Select a semester</label>
+					<select name="select_semester_2" class="form-control" id="select_semester_2" required>
+						<option value="fall"  >Fall</option>
+						<option value="winter">Winter</option>
+						<option value="spring">Spring</option>
+						<option value="summer">Summer</option>
+					</select>
+				</div>  <!-- select the semester -->
+
+				<div class="form-group">
+					<label for="select_weekday_2">Select a weekday</label>
+					<select name="select_weekday_2" class="form-control" id="select_weekday_2" required>
+						<option value="monday">Monday</option>
+						<option value="tuesday">Tuesday</option>
+						<option value="wednesday">Wednesday</option>
+						<option value="thursday">Thursday</option>
+						<option value="friday">Friday</option>
+						<option value="saturday">Saturday</option>
+						<option value="sunday">Sunday</option>
+					</select>
+				</div>  <!-- select the weekday -->
+
+				<div class="form-group">
+					<label for="select_starttime_2">Select a start time (24h)</label>
+					<input type="time" name="select_starttime_2" class="form-control" id="select_starttime_2" placeholder="24:59" required>
+				</div>  <!-- select start time -->
+
+				<div class="form-group">
+					<label for="select_endtime_2">Select a start time (24h)</label>
+					<input type="time" name="select_endtime_2" class="form-control" id="select_endtime_2" placeholder="24:59" required>
+				</div>  <!-- select end time -->
+
+				<button type="button" class="btn btn-primary btn-block" id="submit_btn_2" disabled>Submit</button>
+			</form>
+		</div>  <!-- /#add_section -->
+
+		<div class="container" id="add_ta" style="display:none">
+			<form>
+				<div class="form-group">
+					<label for="ta_name_3">TA name</label>
+					<input type="text" class="form-control" id="ta_name_3" required>
+				</div>
+				
+				<div class="form-group">
+					<label for="ta_number_3">Student number</label>
+					<input type="number" class="form-control" id="ta_number_3" min="1111111" step="1" placeholder="1111111" required>
+				</div>
+				
+				<div class="form-group">
+					<label for="profile_picture_3">Profile picture URL</label>
+					<input type="text" class="form-control" id="profile_picture_3" required>
+				</div>
+				
+				<button type="button" class="btn btn-primary btn-block" id="submit_btn_3" disabled>Submit</button>
+			</form>
+		</div>  <!-- /#add_ta -->
+		
+		<div class="container" id="assign_ta" style="display:none">
+			<form>
+				<div class="form-group">
+					<label for="select_course_4">Select a course</label>
+					<select name="select_course_4" class="form-control" id="select_course_4">
+
+					</select>
+				</div>
+				<div class="form-group">
+					<label for="select_section_4">Select a section</label>
+					<select name="select_section_4" class="form-control" id="select_section_4">
+
+					</select>
+				</div>
+				<div class="form-group">
+					<label for="select_ta_4">Select a TA</label>
+					<select name="select_ta_4" class="form-control" id="select_ta_4">
+
+					</select>
+				</div>
+				
+				<button type="button" class="btn btn-primary btn-block" id="submit_btn_4">Submit</button>
+			</form>
+		</div>  <!-- /#assign_ta -->
+
+		<!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.js"></script>-->
+		<!--<script src="js/manage.js"></script>-->
+		<script src="/js/prof.js"></script>
+		<!-- Latest compiled and minified JavaScript -->
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+	</body>
 </html>
