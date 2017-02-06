@@ -40,6 +40,20 @@ function clear_select(dropdown) {
 	}	
 }
 
+function reset_btn(btn, reset_text) {
+	btn.className = "btn btn-primary btn-block";
+	btn.innerHTML = reset_text;
+}
+
+function animate_failure(btn, fail_text, reset_text) {
+	btn.style.transition = '0.25s linear';
+	btn.className = "btn btn-danger btn-block";
+	btn.innerHTML = fail_text;
+	setTimeout(() => {
+		reset_btn(btn, reset_text);
+	}, 2000);
+}
+
 /*******************************
  * Main initializaiton routine *
  * *****************************/
@@ -123,6 +137,24 @@ q3_0.addEventListener('change', (e) => {
 });
 
 submit_btn_0.addEventListener('click', (e) => {
+
+	// basic client-side input validation 
+	if ( !input_student_number_0.value.match(/^\d{7}$/) ) {
+		animate_failure( submit_btn_0, 'Invalid student number', 'View Feedback' );
+	} else if ( !select_course_0.value.toUpperCase().match(/^[A-Z]{3}\d{4}$/) ) {
+		animate_failure( submit_btn_0, 'Invalid course code', 'View Feedback' );
+	} else if ( select_section_0.value === '' ) {
+		animate_failure( submit_btn_0, 'Invaid section ID', 'View Feedback' );
+	} else if ( select_ta_0.value === '' ) {
+		animate_failure( submit_btn_0, 'Invalid TA name', 'View Feedback' );
+	} else if ( q1_0.value < 0 || q1_0.value > 10 ) {
+		animate_failure( submit_btn_0, 'Invalid value for question 1', 'View Feedback' );
+	} else if ( q2_0.value < 0 || q1_0.value > 10 ) {
+		animate_failure( submit_btn_0, 'Invalid value for question 2', 'View Feedback' );
+	} else if ( q3_0.value < 0 || q1_0.value > 10 ) {
+		animate_failure( submit_btn_0, 'Invalid value for question 3', 'View Feedback' );
+	}
+
 	submit_feedback(
 			input_student_number_0.value,
 			select_course_0.value,

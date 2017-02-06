@@ -1,0 +1,5 @@
+ip 	 = '127.0.0.1'
+port = 5432
+user = 'some_user'
+pass = 'some_password'
+db	 = 'some_database'
