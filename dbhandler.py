@@ -2,10 +2,9 @@
 # Authors: NuclearBanane, inspectorG4dget
 # Contributors :
 # Date : 2016/12/30
-# Version : v0.7
+# Version : v0.8
 #####
 
-import ConfigParser as CP
 import operator
 import pg8000
 import toml
@@ -13,17 +12,15 @@ import toml
 from datetime import datetime as dt
 from backend import getYearSemester
 
-config = CP.RawConfigParser()
-config.read('dbconn.conf')
-# conf = toml.load('dbconn.toml')
+conf = toml.load('dbconn.toml')
 
-ip          = config.get("Default", "IP")
-port        = config.getint("Default", "port")
-username    = config.get("Default", "user")
-pwd         = config.get("Default", "password")
-db          = config.get("Default", "database")
-
-conn = pg8000.connect(host=ip, port=port,user=username, password=pwd, database=db)
+conn = pg8000.connect(
+        host=conf['ip'],
+        port=conf['port'],
+        user=conf['user'],
+        password=conf['pass'],
+        database=conf['db']
+    )
 
 def getCourses():
     c = conn.cursor()
@@ -87,20 +84,24 @@ def createTA(stnum, fname, lname,  profilepic):
     try:
         c.execute("""INSERT INTO ta (stnum, firstname, lastname, profilepic) VALUES (%s,%s,%s,%s)""", (stnum, fname, lname, profilepic))
         conn.commit()
+        return (200, 'success', 'Success')
     except pg8000.ProgrammingError as e:
         print(e)
         conn.rollback()
-        return False
+        return (409, 'fail', 'TA is already registered')
 
 def createCourse(courseCode):
     c = conn.cursor()
     try:
         c.execute("""INSERT INTO course(code) VALUES (%s)""", (courseCode,))
         conn.commit()
-        return True
+        return 'success'
     except pg8000.ProgrammingError:
         conn.rollback()
-        return False
+        return 'dupe'
+    except Exception:
+        conn.rollback()
+        return 'err_misc'
 
 #def createSection(courseCode, sectionCode, year, semester, weekday, startTime, endTime):
 def createSection(courseCode, sectionCode, year, semester, weekday, startTime, endTime):
@@ -109,10 +110,15 @@ def createSection(courseCode, sectionCode, year, semester, weekday, startTime, e
         c.execute("""INSERT INTO section(course, sectionID,  currYear, semester, weekday, startTime, endTime) VALUES (%s, %s, %s, %s ,%s,%s,%s)""",
             (courseCode, sectionCode, year, semester, weekday, startTime, endTime,))
         conn.commit()
+        return (200, 'success', 'success')
     except pg8000.ProgrammingError as e:
         print(e)
         conn.rollback()
-        return False
+        return (409, 'fail', 'Section exists')
+    except Exception as e:
+        print(e)
+        conn.rollback()
+        return (500, 'fail', 'Database error')
 
 def assign_ta_to_section(ta_id, course_code, section_id):
     c = conn.cursor()
@@ -121,10 +127,15 @@ def assign_ta_to_section(ta_id, course_code, section_id):
         c.execute("""INSERT INTO teaches(taid, course, section, curryear, semester) VALUES (%s, %s, %s, %s, %s)""",
                 (ta_id, course_code, section_id, year, semester))
         conn.commit()
+        return (200, 'success', 'Success')
     except pg8000.ProgrammingError as e:
-        conn.rollback()
         print(e)
-        return False
+        conn.rollback()
+        return (409, 'fail', 'This TA is already assigned to this section')
+    except Exception as e:
+        print(e)
+        conn.rollback()
+        return (500, 'fail', 'Database error')
 
 def submitFeedback(student_number, course_code, section_id, ta_id, q1, q2, q3, feedback):
     year, semester = getYearSemester()

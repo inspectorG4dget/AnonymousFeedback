@@ -54,6 +54,29 @@ function clear_table(table) {
 	}
 }
 
+function reset_btn(btn, reset_text) {
+	btn.className = "btn btn-primary btn-block";
+	btn.innerHTML = reset_text;
+}
+
+function animate_success(btn, succ_text, timeout, reset_text) {
+	btn.style.transition = '0.25s linear';
+	btn.className = "btn btn-success btn-block";
+	btn.innerHTML = succ_text;
+	setTimeout(() => {
+		reset_btn(btn, reset_text);
+	}, timeout);
+}
+
+function animate_failure(btn, fail_text, timeout, reset_text) {
+	btn.style.transition = '0.25s linear';
+	btn.className = "btn btn-danger btn-block";
+	btn.innerHTML = fail_text;
+	setTimeout(() => {
+		reset_btn(btn, reset_text);
+	}, timeout);
+}
+
 var [start_time_valid, end_time_valid] = [false, false];
 
 /************************************
@@ -131,13 +154,18 @@ let select_course_0 = document.getElementById('select_course_0');
 let select_section_0 = document.getElementById('select_section_0');
 let select_ta_0 = document.getElementById('select_ta_0');
 
+let ta_name_string = document.getElementById('ta_name_0');	
 let select_section_toggle_0 = new Event('toggle_enabled');
 
 select_course_0.addEventListener('change', (e) => {
+	clear_table(document.getElementById('data_table_0'));
+	ta_name_string.innerHTML = '';
 	get_sections(select_course_0.value, 'select_section_0', populate_select);
 });
 
 select_section_0.addEventListener('change', (e) => {
+	clear_table(document.getElementById('data_table_0'));
+	ta_name_string.innerHTML = '';
 	get_ta(select_course_0.value, select_section_0.value, (resp) => {
 		if ( resp.length <= 1 ) {
 			select_ta_0.parentNode.style.display = 'none';
@@ -539,7 +567,6 @@ function get_feedback(course, section, ta_name=null) {
 	}
 
 	let xhr = new XMLHttpRequest();
-	let ta_name_string = document.getElementById('ta_name_0');	
 	ta_name_string.innerHTML = '';
 
 	xhr.onreadystatechange = () => {
@@ -550,7 +577,7 @@ function get_feedback(course, section, ta_name=null) {
 			// return from the function early if there are no TAs assigned to this section
 			// toggle the multi-TA select as appropriate otherwise
 			if ( resp['feedbacks'].length == 0 ) {
-				ta_name_string.innerHTML = 'No feedback available for this section.';
+				animate_failure( submit_btn_0, 'No feedback available for this section', 3000, 'View Feedback' );
 				return;
 			}
 
@@ -613,15 +640,24 @@ function put_course(course_code) {
 		if ( xhr.readyState === 4 ) {
 			switch ( xhr.status ) {
 				case 200:
-					status_span.innerHTML = 'Success.'
+					animate_success( submit_btn_1, 'Success', 2000, 'Submit' );
+					add_course_1.value = '';
+					break;
 
 				// invalid course name
 				case 400:
-					status_span.innerHTML = 'Adding a new course failed: invalid course name.';
+					animate_failure( submit_btn_1, 'Adding a new course failed: invalid course name', 3000, 'Submit' );
+					break;
 
 				//  course already exists
 				case 409:
-					status_span.innerHTML = 'This course already exists.';
+					animate_failure( submit_btn_1, 'Adding a new course failed: course exists', 3000, 'Submit' );
+					break;
+				
+				//  some other type of error
+				case 500:
+					animate_failure( submit_btn_1, 'Adding a new course failed: an unknown error occurred', 3000, 'Submit' );
+					break;
 			}
 		}
 	}
@@ -630,8 +666,25 @@ function put_course(course_code) {
 	xhr.send();
 }
 
+// TODO: dedup all this switch/case stuff. Could probably just drop it into a dispatch/triage helper.
 function put_section(course_code, section_id, year, semester, weekday, start_time, end_time) {
 	let xhr = new XMLHttpRequest();
+	xhr.onreadystatechange = () => {
+		if ( xhr.readyState === 4 ) {
+			switch (xhr.status) {
+				case 200:
+					animate_success( submit_btn_2, 'Success', 2000, 'Submit' );
+					break;
+
+				case 400:
+				case 409:
+				case 500:
+					let resp = JSON.parse(xhr.responseText);
+					animate_failure( submit_btn_2, 'Adding a new section failed: ' + resp.msg, 3500, 'Submit' );
+					break;	
+			}
+		}
+	};
 	xhr.open('PUT', '/addSection?course_code=' + course_code + '&section_id=' + section_id + '&year=' + year
 			+'&semester=' + semester + '&weekday=' + weekday + '&start_time=' + start_time + '&end_time=' + end_time);
 	xhr.send();
@@ -639,12 +692,44 @@ function put_section(course_code, section_id, year, semester, weekday, start_tim
 
 function put_ta(fname, lname, student_no, profile_picture) {
 	let xhr = new XMLHttpRequest();
+	xhr.onreadystatechange = () => {
+		if ( xhr.readyState === 4 ) {
+			switch (xhr.status) {
+				case 200:
+					animate_success( submit_btn_3, 'Success', 2000, 'Submit' );
+					break;
+
+				case 400:
+				case 409:
+				case 500:
+					let resp = JSON.parse(xhr.responseText);
+					animate_failure( submit_btn_3, 'Adding a new TA failed: ' + resp.msg, 3500, 'Submit' );
+					break;	
+			}
+		}
+	};
 	xhr.open('PUT', '/addTA?fname=' + fname + '&lname=' + lname + '&student_no=' + student_no + '&profile_picture=' + profile_picture);
 	xhr.send();
 }
 
 function assign_ta(ta_id, course_code, section_id) {
 	let xhr = new XMLHttpRequest();
+	xhr.onreadystatechange = () => {
+		if ( xhr.readyState === 4 ) {
+			switch (xhr.status) {
+				case 200:
+					animate_success( submit_btn_4, 'Success', 2000, 'Submit' );
+					break;
+
+				case 400:
+				case 409:
+				case 500:
+					let resp = JSON.parse(xhr.responseText);
+					animate_failure( submit_btn_4, 'Adding a new TA failed: ' + resp.msg, 3500, 'Submit' );
+					break;	
+			}
+		}
+	};
 	xhr.open('POST', '/assignTA?course_code=' + course_code + '&section_id=' + section_id + '&ta_id=' + ta_id);
 	xhr.send();
 };

@@ -2,13 +2,14 @@
 # Authors: NuclearBanane, inspectorG4dget
 # Contributors :
 # Date : 2016/12/30
-# Version : v0.7
+# Version : v0.8
 #####
 
 import datetime
 import dbhandler
 import json
 import re
+import slog
 import tornado.ioloop
 import tornado.web
 
@@ -126,65 +127,177 @@ class ViewFeedbackHandler(tornado.web.RequestHandler):
         }))
 
         self.finish()
-
 class AddCourseHandler(tornado.web.RequestHandler):
+    """
+    Invokes `dbhandler.createCourse()` to add a course to the `course` table.
+
+    Args:
+        course_code: the course to add, identified by a code matching /^[A-Za-z]{3}\d{4}$/.
+    Returns:
+        HTTP 200 on success
+        HTTP 400 if the request is malformed
+        HTTP 409 if a course is a duplicate
+        HTTP 500 for other errors
+    """
     @tornado.web.asynchronous
     def put(self):
-        course_code = self.get_argument('course_code').upper()
+        try:
+            course_code = self.get_argument('course_code').upper()
+        except KeyError as e:
+            self.set_status(400)
+            self.finish()
+
         if re.match(r'^[A-Z]{3}\d{4}', course_code):
-            if dbhandler.createCourse(course_code):
+            db_status = dbhandler.createCourse(course_code)
+            if db_status == 'success':
                 self.set_status(200)
-            else:
+            elif db_status == 'dupe':
                 self.set_status(409)
+            else:
+                self.set_status(500)
         else:
             self.set_status(400)
         self.finish()
 
+# TODO: review error handling and input validation. Could probably be streamlined a bit.
 class AddSectionHandler(tornado.web.RequestHandler):
+    """
+    Invokes dbhandler.createSection to register a new section for a course.
+
+    Args:
+        course_code: the course code. Matches /^[A-Za-z]{3}\d{4}$/.
+        section_id: the section ID to add.
+        year: the calendar year during which the section will be available.
+        semester: the semester during which the section will be available. Maps [fall..summer] => [1..4].
+        weekday: the weekday during which the section will be available. Maps [mon..sun] => [1..7].
+        start_time: the 24h time when a section starts.
+        end_time: the 24h time when a section ends.
+    """
     @tornado.web.asynchronous
     def put(self):
         flag = False
-        course_code = self.get_argument('course_code').upper()
-        if not re.match(r'^[A-Z]{3}\d{4}', course_code):
-            self.set_status(400)
-            flag = True
-        section_id = self.get_argument('section_id')
-        year = int(self.get_argument('year'))
-        if year < datetime.datetime.now().year:
-            self.set_status(400)
-            flag = True
-        semester = self.get_argument('semester')
-        semester = ['fall', 'winter', 'spring', 'summer'].index(semester) + 1
-        if not 1 <= semester <= 4:
-            self.set_status(400)
-            flag = True
-        weekday = self.get_argument('weekday').lower()
-        weekday = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].index(weekday) + 1
-        if not 1 <= weekday <= 7:
-            self.set_status(400)
-            flag = True
-        if not flag:
+        resp = {
+                'status' : 'fail',
+                'msg': None
+            }
+        try:
+            course_code = self.get_argument('course_code').upper()
+            section_id = self.get_argument('section_id')
+            year = int(self.get_argument('year'))
+            semester = self.get_argument('semester')
+            weekday = self.get_argument('weekday').lower()
             start_time = self.get_argument('start_time')
             end_time = self.get_argument('end_time')
-            dbhandler.createSection(course_code, section_id, year, semester, weekday, start_time, end_time)
+        except KeyError as e:
+            self.set_status(400)
+            resp['msg'] = 'Missing form field'
+            self.write(json.dumps(resp))
+            self.finish()
+
+        start_time_dt = None
+        resp = {
+                'status' : 'fail',
+                'msg': None
+            }
+
+        if not re.match(r'^[A-Z]{3}\d{4}', course_code):
+            self.set_status(400)
+            resp['msg'] = 'Invalid course code'
+            flag = True
+        if not flag and year < datetime.datetime.now().year:
+            self.set_status(400)
+            resp['msg'] = 'Invalid year'
+            flag = True
+        semester = ['fall', 'winter', 'spring', 'summer'].index(semester) + 1
+        if not flag and not 1 <= semester <= 4:
+            self.set_status(400)
+            resp['msg'] = 'Invalid semester'
+            flag = True
+        weekday = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].index(weekday) + 1
+        if not flag and not 1 <= weekday <= 7:
+            self.set_status(400)
+            resp['msg'] = 'Invalid weekday'
+            flag = True
+        if not flag and not re.match(r'^\d{1,2}:\d{2}', start_time):
+            self.set_status(400)
+            resp['msg'] = 'Invalid start time'
+            flag = True
+        if not flag and not re.match(r'^\d{1,2}:\d{2}', end_time):
+            self.set_status(400)
+            resp['msg'] = 'Invalid end time'
+            flag = True
+        if not flag:
+            try:
+                h, m = start_time.split(':')
+                start_time_dt = datetime.datetime(1, 1, 1, int(h), int(m))
+            except ValueError as e:
+                self.set_status(400)
+                resp['msg'] = 'Invalid start time'
+                flag = True
+        if not flag:
+            try:
+                h, m = end_time.split(':')
+                end_time_dt = datetime.datetime(1, 1, 1, int(h), int(m))
+                if end_time_dt < start_time_dt:
+                    raise ValueError
+            except ValueError as e:
+                self.set_status(400)
+                resp['msg'] = 'Invalid end time'
+                flag = True
+        if not flag:
+            (http_status, status, msg) = dbhandler.createSection(course_code, section_id, year, semester, weekday, start_time, end_time)
+            self.set_status(http_status)
+            resp['status'] = status
+            resp['msg'] = msg
+        self.write(json.dumps(resp))
         self.finish()
 
 class AddTAHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
     def put(self):
-        ta_fname = self.get_argument('fname')
-        ta_lname = self.get_argument('lname')
-        ta_num = self.get_argument('student_no')
-        profile_pic_url = self.get_argument('profile_picture')
-        dbhandler.createTA(ta_num, ta_fname, ta_lname, profile_pic_url)
+        resp = {
+                'status' : 'fail',
+                'msg': None
+            }
+        try:
+            ta_fname = self.get_argument('fname')
+            ta_lname = self.get_argument('lname')
+            ta_num = self.get_argument('student_no')
+            profile_pic_url = self.get_argument('profile_picture')
+        except KeyError as e:
+            resp['msg'] = 'Missing form field';
+            self.set_status(400)
+            self.write(json.dumps(resp))
+            self.finish()
+        (http_status, status, msg) = dbhandler.createTA(ta_num, ta_fname, ta_lname, profile_pic_url)
+        self.set_status(http_status)
+        resp['status'] = status
+        resp['msg'] = msg
+        self.write(json.dumps(resp))
+        self.finish()
 
 class AssignTAHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
     def post(self):
-        ta_id = int(self.get_argument('ta_id'))
-        course_code = self.get_argument('course_code').upper()
-        section_id = self.get_argument('section_id').upper()
-        dbhandler.assign_ta_to_section(ta_id, course_code, section_id)
+        resp = {
+                'status' : 'fail',
+                'msg': None
+            }
+        try:
+            ta_id = int(self.get_argument('ta_id'))
+            course_code = self.get_argument('course_code').upper()
+            section_id = self.get_argument('section_id').upper()
+        except KeyError as e:
+            resp['msg'] = 'Missing form field';
+            self.set_status(400)
+            self.write(json.dumps(resp))
+            self.finish()
+        (http_status, status, msg) = dbhandler.assign_ta_to_section(ta_id, course_code, section_id)
+        self.set_status(http_status)
+        resp['status'] = status
+        resp['msg'] = msg
+        self.write(json.dumps(resp))
+        self.finish()
 
 class ListAllTAsHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
