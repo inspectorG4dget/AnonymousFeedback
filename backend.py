@@ -60,7 +60,7 @@ class GetCoursesHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
     def get(self):
         courses= dbhandler.getCourses()
-        courses_u = [str(k[0]) for k in courses]
+        courses_u = sorted([str(k[0]) for k in courses])
         self.write(json.dumps({'results' : courses_u}))
         self.finish()
 
@@ -81,7 +81,7 @@ class GetSectionsHandler(tornado.web.RequestHandler):
             results[i][2] = startTime.strftime("%H:%M")
             results[i][3] = endTime.strftime("%H:%M")
 
-        self.write(json.dumps({'results' : results}))
+        self.write(json.dumps({'results' : sorted(results)}))
         self.finish()
 
 class GetSectionTAHandler(tornado.web.RequestHandler):
