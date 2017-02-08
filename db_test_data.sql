@@ -2,11 +2,11 @@
 INSERT INTO course(code)
 VALUES ('ITI1120'), ('ITI1121'), ('CEG2136'), ('ITI1100');
 
-INSERT INTO ta(stnum, firstName, lastName, profilepic) VALUES
-('1','Ashwin','Pancakes','AuntJemima.logo'),
-('2','Alimou','Rocks','Fuzzy.jpeg'),
-('3','Balmer','Peak','MSlogo.png'),
-('4','Remi','Gel','Rems.png');
+INSERT INTO ta(stnum, firstName, lastName, profilepic, description) VALUES
+('1','Ashwin','Pancakes','AuntJemima.logo', 'Likes puns, Iron Man, and long stays on Mars involving potato farming.'),
+('2','Alimou','Rocks','Fuzzy.jpeg', 'It\'s Alimou. That is all.'),
+('3','Balmer','Peak','MSlogo.png', 'Your best drinking buddy.'),
+('4','Remi','Gel','Rems.png', 'Is a marshmallow.');
 
 INSERT INTO section(course, sectionID,currYear,semester, weekday, startTime, endTime) VALUES
 ('ITI1120', 'T1', 2016, 1, '1', '11:30', '14:30'),

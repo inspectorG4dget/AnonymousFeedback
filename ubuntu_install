@@ -1,9 +1,0 @@
-#####
-#	These are instructions for setting this up in a ubuntu VM (15.04 Desktop 64bit)
-#####
-
-* python-pip
-
-Optional
-* vim
-* pgadmin4

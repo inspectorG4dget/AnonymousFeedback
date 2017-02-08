@@ -8,39 +8,61 @@
 import datetime
 import dbhandler
 import json
+import logging
 import re
-import slog
+import sys
+import toml
 import tornado.ioloop
 import tornado.web
 
 from datetime import datetime as dt
+from slog.slog import Slog
+
+conf = toml.load('conf.toml')
+
+log = Slog(conf['log']['file'], conf['log']['level'])
+
+dbhandler.log = log
 
 def getYearSemester(year=dt.today().year, month=dt.today().month):
+    '''
+    Given at least a month, returns the current semester. Optionally takes a
+    year, but this defaults to the current year, which is often the most
+    practical value.
+
+    Args:
+        year: defaults to the current year.
+        month: an integer [1..12] representing the current month.
+    Returns:
+        (year, semester)
+    '''
     semester = {0:2, 1:3, 2:1, 3:1}[month//4]
     return year, semester
 
+###
+# Web frontend handlers. Render static assets to a browser.
+###
 class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
-        return self.get_secure_cookie("user")
+        return self.get_secure_cookie('user')
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
-        self.render("assets/index.html")
+        self.render('assets/index.html')
 
 class FeedBackHandler(tornado.web.RequestHandler):
     def get(self):
         courses= dbhandler.getCourses()
         courses_u = [str(k[0]) for k in courses]
-        self.render("assets/feedback.html")
+        self.render('assets/feedback.html')
 
 class ManageHandler(tornado.web.RequestHandler):
     def get(self):
-        self.render("assets/professor.html")
+        self.render('assets/professor.html')
 
-####
-# Used for AJAX POST requests
-####
-
+###
+# RESTful API endpoints
+###
 class SubmitFeedbackHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
     def post(self):
@@ -78,8 +100,8 @@ class GetSectionsHandler(tornado.web.RequestHandler):
         results = list(dbhandler.getSections(course_code, year, semester, active))
         for i, (sectionID, weekday, startTime, endTime) in enumerate(results):
             results[i][1] = str(weekday)
-            results[i][2] = startTime.strftime("%H:%M")
-            results[i][3] = endTime.strftime("%H:%M")
+            results[i][2] = startTime.strftime('%H:%M')
+            results[i][3] = endTime.strftime('%H:%M')
 
         self.write(json.dumps({'results' : sorted(results)}))
         self.finish()
@@ -87,8 +109,8 @@ class GetSectionsHandler(tornado.web.RequestHandler):
 class GetSectionTAHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
     def get(self):
-        course_code = self.get_argument("course_code")
-        section_id = self.get_argument("section_id")
+        course_code = self.get_argument('course_code')
+        section_id = self.get_argument('section_id')
 
         today = dt.today()
         year, semester = getYearSemester(today.year, today.month)
@@ -98,8 +120,8 @@ class GetSectionTAHandler(tornado.web.RequestHandler):
             active = False
         results = list(dbhandler.getSectionTA(course_code, section_id, year, semester))
         for i,(taID, fname, lname) in enumerate(results):
-            name = "%s %s" %(fname, lname)
-            results[i] = {"taID": str(taID), "name": name}
+            name = '%s %s' %(fname, lname)
+            results[i] = {'taID': str(taID), 'name': name}
         self.write(json.dumps({'results' : results}))
         self.finish()
 
@@ -128,40 +150,37 @@ class ViewFeedbackHandler(tornado.web.RequestHandler):
 
         self.finish()
 class AddCourseHandler(tornado.web.RequestHandler):
-    """
-    Invokes `dbhandler.createCourse()` to add a course to the `course` table.
-
-    Args:
-        course_code: the course to add, identified by a code matching /^[A-Za-z]{3}\d{4}$/.
-    Returns:
-        HTTP 200 on success
-        HTTP 400 if the request is malformed
-        HTTP 409 if a course is a duplicate
-        HTTP 500 for other errors
-    """
     @tornado.web.asynchronous
     def put(self):
+        '''
+        Invokes `dbhandler.createCourse()` to add a course to the `course` table.
+
+        Args:
+            course_code: the course to add, identified by a code matching /^[A-Za-z]{3}\d{4}$/.
+        Returns:
+            HTTP 200 on success
+            HTTP 400 if the request is malformed
+            HTTP 409 if a course is a duplicate
+            HTTP 500 for other errors
+        '''
         try:
             course_code = self.get_argument('course_code').upper()
         except KeyError as e:
+            log.info('Missing argument: course_code')
             self.set_status(400)
             self.finish()
 
         if re.match(r'^[A-Z]{3}\d{4}', course_code):
             db_status = dbhandler.createCourse(course_code)
-            if db_status == 'success':
-                self.set_status(200)
-            elif db_status == 'dupe':
-                self.set_status(409)
-            else:
-                self.set_status(500)
+            self.set_status(db_status[0])
+            self.write(db_status[2])
         else:
             self.set_status(400)
         self.finish()
 
 # TODO: review error handling and input validation. Could probably be streamlined a bit.
 class AddSectionHandler(tornado.web.RequestHandler):
-    """
+    '''
     Invokes dbhandler.createSection to register a new section for a course.
 
     Args:
@@ -172,7 +191,7 @@ class AddSectionHandler(tornado.web.RequestHandler):
         weekday: the weekday during which the section will be available. Maps [mon..sun] => [1..7].
         start_time: the 24h time when a section starts.
         end_time: the 24h time when a section ends.
-    """
+    '''
     @tornado.web.asynchronous
     def put(self):
         flag = False
@@ -310,7 +329,7 @@ class ListAllTAsHandler(tornado.web.RequestHandler):
                     'name' : name
                 })
 
-        self.write(json.dumps({"results": ta_list}))
+        self.write(json.dumps({'results': ta_list}))
         self.finish()
 
 ####
@@ -318,6 +337,8 @@ class ListAllTAsHandler(tornado.web.RequestHandler):
 # This makes certain API requests from a web page or such an easy to handle
 # Unfortunatly it means we need to be very granular with our handlers
 ####
+
+conf = conf['app']
 
 # we subclass the Application class to configure some useful settings (like the cookie
 # secret and the debug option) more cleanly
@@ -347,12 +368,21 @@ class AnonymousFeedback(tornado.web.Application):
                 (r'/js/(.*)',       tornado.web.StaticFileHandler, {'path': 'assets/js/'     })
             ]
         settings = {
-                'debug' : True,
-                'cookie_secret' : '9e3c8a18-1f36-4dc0-84d2-38ef3160528f'
-            }
+                'debug' : conf['debug'],
+                'cookie_secret' : conf['cookie_secret']
+        }
         tornado.web.Application.__init__(self, handlers, **settings)
 
-if __name__ == "__main__":
+if __name__ == '__main__':
+    logging.getLogger('tornado.access').disabled = True
     app = AnonymousFeedback()
-    app.listen(8888)
-    tornado.ioloop.IOLoop.instance().start()
+    log.info('Starting {0} on port {1}.'.format(conf['name'], conf['port']))
+    try:
+        app.listen(conf['port'])
+        tornado.ioloop.IOLoop.instance().start()
+    except KeyboardInterrupt:
+        log.info('Received KeyboardInterrupt, exiting.')
+        sys.exit(0)
+    except Exception as e:
+        print(e)
+        log.crit('Encountered an unhandled exception.')

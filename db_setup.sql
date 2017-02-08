@@ -25,6 +25,7 @@ CREATE TABLE TA (
     firstName   VARCHAR(20),
     lastName    VARCHAR(20),
     profilePic  VARCHAR(100),
+    description VARCHAR(250),
     PRIMARY KEY (stnum)
 );
 CREATE TABLE TEACHES (

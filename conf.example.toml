@@ -1,0 +1,16 @@
+[app]
+debug = true
+cookie_secret = '99ed3342-5576-42b3-8ef6-b68e85631456'
+port = 8888
+
+[db]
+host = 'localhost'
+port = 5432
+username = 'some_user'
+password = 'some_pass'
+database = 'some_db'
+
+[log]
+file = 'anonfeedback.log'
+level = 5
+

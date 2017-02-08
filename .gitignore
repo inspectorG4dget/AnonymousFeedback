@@ -1,4 +1,5 @@
 *.pyc
-./dbconn.conf
+*.log
 dbconn.conf
 dbconn.toml
+conf.toml
