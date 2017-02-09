@@ -208,9 +208,9 @@ def submitFeedback(student_number, course_code, section_id, ta_id, q1, q2, q3, f
         conn.commit()
         return 'success'
     except pg8000.ProgrammingError as e:
-        print(e)
+        log.fail(e[3] + ' : ' + e[4])
         conn.rollback()
-        return False
+        return (400, 'fail', 'Bad request')
 
 def getCourseFeedbacks(courseCode, sectionCode):
     year, semester = getYearSemester()

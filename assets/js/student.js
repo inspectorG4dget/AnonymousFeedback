@@ -110,9 +110,25 @@ select_section_0.addEventListener('change', (e) => {
 		} else if ( resp.length === 1 ) {
 			populate_select( select_ta_0, ta_ids, ta_names );
 			select_ta_0.disabled = true;
-		}
+		} 
 	});
 });
+
+input_student_number_0.addEventListener('input', (e) => {
+	if ( input_student_number_0.value.length < 7 ) {
+		if ( input_student_number_0.value.length === 0 ) {
+			submit_btn_0.disabled = true;
+			submit_btn_0.innerHTML = 'Input a student number';
+			return;
+		}
+		submit_btn_0.disabled = true;
+		submit_btn_0.innerHTML = 'Invalid student number';
+	} else {
+		submit_btn_0.disabled = false;
+		submit_btn_0.innerHTML = 'Submit Feedback';
+	}
+});
+
 
 let q1_0 = document.getElementById('q1_0');
 let q1_val_0 = document.getElementById('q1_val_0');
@@ -197,6 +213,12 @@ function populate_select(dropdown, data_v, data_d=null) {
 				ta_ids.push(cv.taID);
 			});
 
+			if ( ta_names.length === 0 ) {
+				ta_ids = [-1];
+				ta_names = ['No TAs available for this section or course'];
+			}
+
+
 			// then update the ta selector dropdown
 			populate_select( select_ta_0, ta_ids, ta_names );
 			//select_ta_0.disabled = true;
@@ -257,21 +279,13 @@ function get_sections(course, select_id, callback) {
 	xhr.onreadystatechange = () => {
 		if ( xhr.readyState === 4 && xhr.status === 200 ) {
 			let resp = JSON.parse(xhr.responseText)['results'];
-			let btn = document.getElementById('submit_btn_0');
 			if ( resp.length > 0 ) {
-				btn.disabled = false;
-				btn.innerHTML = 'Submit Feedback';
 				callback(dropdown, resp.map((elem) => { return elem[0] }));
 				dropdown.disabled = false;
-				q1_0.disabled = false;
-				q2_0.disabled = false;
-				q3_0.disabled = false;
-				feedback_0.disabled = false;
-				submit_btn_0.disabled = false;
 			} else {
 				// acquire and disable the submission button
-				btn.disabled = true;
-				btn.innerHTML = 'Select a section';
+				submit_btn_0.disabled = true;
+				submit_btn_0.innerHTML = 'Select a section';
 
 				// update the dropdown with an informative message
 				let opt1 = document.createElement('option');
@@ -290,11 +304,6 @@ function get_sections(course, select_id, callback) {
 				select_ta_0.disabled = true;
 				select_ta_0.appendChild(opt2);
 
-				q1_0.disabled = true;
-				q2_0.disabled = true;
-				q3_0.disabled = true;
-				feedback_0.disabled = true;
-				submit_btn_0.disabled = true;
 			}
 		}
 	};
@@ -310,6 +319,26 @@ function get_ta(course, section, callback) {
 		if ( xhr.readyState === 4 && xhr.status === 200 ) {
 			resp = JSON.parse(xhr.responseText)['results'];
 			callback(resp);
+			console.log('foo');
+			if ( resp.length > 0 ) {
+				q1_0.disabled = false;
+				q2_0.disabled = false;
+				q3_0.disabled = false;
+				feedback_0.disabled = false;
+				submit_btn_0.disabled = false;
+				submit_btn_0.innerHTML = 'Submit Feedback';
+			} else {
+				q1_0.disabled = true;
+				q2_0.disabled = true;
+				q3_0.disabled = true;
+				feedback_0.disabled = true;
+				submit_btn_0.disabled = true;
+				submit_btn_0.innerHTML = 'Select a TA';
+				clear_select(select_ta_0);
+				let empty_dropdown = document.createElement('option');
+				empty_dropdown.innerHTML = 'No TAs available for this section or course';
+				select_ta_0.appendChild(empty_dropdown);
+			}
 		}
 	}
 	xhr.open('GET', '/getSectionTAs?course_code=' + course + '&section_id=' + section);
