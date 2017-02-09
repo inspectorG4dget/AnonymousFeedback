@@ -81,8 +81,11 @@ class SubmitFeedbackHandler(tornado.web.RequestHandler):
             feedback = self.get_argument('feedback')
         except KeyError as e:
             print(e)
-        () = dbhandler.submitFeedback(student_number, course_code, section_id, ta_id, q1, q2, q3, feedback)
-        self.write(json.dumps({'status' : status}))
+        (http_status, status, message) = dbhandler.submitFeedback(student_number, course_code, section_id, ta_id, q1, q2, q3, feedback)
+        resp['status'] = status
+        resp['msg'] = message
+        self.write(json.dumps(resp))
+        self.set_status(http_status)
         self.finish()
 
 class GetCoursesHandler(tornado.web.RequestHandler):
