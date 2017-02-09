@@ -170,20 +170,22 @@ q3_0.addEventListener('change', (e) => {
 submit_btn_0.addEventListener('click', (e) => {
 
 	// basic client-side input validation 
-	if ( !input_student_number_0.value.match(/^\d{7}$/) ) {
-		animate_failure( submit_btn_0, 'Invalid student number', 'View Feedback' );
+	if ( input_student_number_0.value.length === 0 ) {
+		animate_failure( submit_btn_0, 'Please enter a student number', 'Submit Feedback' );
+	} else if ( !input_student_number_0.value.match(/^\d{7}$/) ) {
+		animate_failure( submit_btn_0, 'Invalid student number', 'Submit Feedback' );
 	} else if ( !select_course_0.value.toUpperCase().match(/^[A-Z]{3}\d{4}$/) ) {
-		animate_failure( submit_btn_0, 'Invalid course code', 'View Feedback' );
+		animate_failure( submit_btn_0, 'Invalid course code', 'Submit Feedback' );
 	} else if ( select_section_0.value === '' ) {
-		animate_failure( submit_btn_0, 'Invaid section ID', 'View Feedback' );
+		animate_failure( submit_btn_0, 'Invaid section ID', 'Submit Feedback' );
 	} else if ( select_ta_0.value === '' ) {
-		animate_failure( submit_btn_0, 'Invalid TA name', 'View Feedback' );
+		animate_failure( submit_btn_0, 'Invalid TA name', 'Submit Feedback' );
 	} else if ( q1_0.value < 0 || q1_0.value > 10 ) {
-		animate_failure( submit_btn_0, 'Invalid value for question 1', 'View Feedback' );
+		animate_failure( submit_btn_0, 'Invalid value for question 1', 'Submit Feedback' );
 	} else if ( q2_0.value < 0 || q1_0.value > 10 ) {
-		animate_failure( submit_btn_0, 'Invalid value for question 2', 'View Feedback' );
+		animate_failure( submit_btn_0, 'Invalid value for question 2', 'Submit Feedback' );
 	} else if ( q3_0.value < 0 || q1_0.value > 10 ) {
-		animate_failure( submit_btn_0, 'Invalid value for question 3', 'View Feedback' );
+		animate_failure( submit_btn_0, 'Invalid value for question 3', 'Submit Feedback' );
 	}
 
 	submit_feedback(
