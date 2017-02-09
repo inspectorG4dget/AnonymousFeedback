@@ -52,6 +52,7 @@ requirements include:
 - `tornado==4.4.2`
 - `pg8000==1.10.6`
 - `toml==0.9.2`
+- `slog==0.9.0`
 
 ### Troubleshooting
 
