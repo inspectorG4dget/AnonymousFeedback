@@ -11,7 +11,7 @@ function init_view(container_id) {
 	
 	// find all top-level nodes in `body`
 	var body_child_nodes = [...document.getElementsByTagName('body')[0].children];
-	body_child_nodes.map((node, iter, _) => {
+	body_child_nodes.map((node, iter) => {
 
 		// filter top-level .container nodes
 		if ( node.className === 'container' ) {
@@ -77,6 +77,33 @@ function animate_failure(btn, fail_text, timeout, reset_text) {
 	}, timeout);
 }
 
+function average(arr) {
+	return arr.reduce((a,b) => { return a+ b }, 0) / arr.length;
+}
+
+function median(arr) {
+	arr.sort((a, b) => { return a - b } );
+	let half = Math.floor(arr.length/2);
+	if (arr.length % 2) {
+		return values[half];
+	} else {
+		return (values[half - 1] + values[half]) / 2.0;
+	}
+}
+
+// credit: derickbaily.com (modified implementation)
+function stddev(data) { 
+	let avg = average(data);
+
+	let square_diffs = data.map((c_data) => {
+		return Math.pow(c_data - avg, 2);
+	});
+
+	let avg_square_diff = average(square_diffs);
+	let std_dev = Math.sqrt(average(square_diffs));
+	return std_dev;
+}
+
 var [start_time_valid, end_time_valid] = [false, false];
 
 /************************************
@@ -88,7 +115,6 @@ let add_course_view    = document.getElementById('nav_course'  );
 let add_section_view   = document.getElementById('nav_section' );
 let add_ta_view        = document.getElementById('nav_ta'      ); 
 let assign_ta_view     = document.getElementById('nav_assign'  );
-
 
 // add click event listeners to menu items
 view_feedback_view.addEventListener('click', (e) => {
@@ -135,7 +161,7 @@ assign_ta_view.addEventListener('click', (e) => {
 let nav = [view_feedback_view, add_course_view, add_section_view, add_ta_view, assign_ta_view];
 let click = new Event('click');
 
-nav.map((curr_tab, i, _) => {
+nav.map((curr_tab, i) => {
 	if ( curr_tab.parentNode.classList.toString() === 'active' ) {
 		activate_tab(curr_tab.id);
 		curr_tab.dispatchEvent(click);
@@ -159,12 +185,14 @@ let select_section_toggle_0 = new Event('toggle_enabled');
 
 select_course_0.addEventListener('change', (e) => {
 	clear_table(document.getElementById('data_table_0'));
+	clear_table(document.getElementById('stats_table_0'));
 	ta_name_string.innerHTML = '';
 	get_sections(select_course_0.value, 'select_section_0', populate_select);
 });
 
 select_section_0.addEventListener('change', (e) => {
 	clear_table(document.getElementById('data_table_0'));
+	clear_table(document.getElementById('stats_table_0'));
 	ta_name_string.innerHTML = '';
 	get_ta(select_course_0.value, select_section_0.value, (resp) => {
 		if ( resp.length <= 1 ) {
@@ -177,7 +205,8 @@ select_section_0.addEventListener('change', (e) => {
 
 submit_btn_0.addEventListener('click', (e) => {
 	clear_table(document.getElementById('data_table_0'));
-	get_feedback(select_course_0.value, select_section_0.value, select_ta_0.value);
+	clear_table(document.getElementById('stats_table_0'));
+	feedback = get_feedback(select_course_0.value, select_section_0.value, select_ta_0.value);
 });
 
 /*************
@@ -413,7 +442,7 @@ function populate_select(dropdown, data_v, data_d=null) {
 	clear_select(dropdown);
 
 	//let dropdown = document.getElementById(select_id);
-	data_v.map((curr_data, i, _) => {
+	data_v.map((curr_data, i) => {
 		let opt = document.createElement('option');
 		opt.innerHTML = data_d[i];
 		opt.value = curr_data;
@@ -426,7 +455,7 @@ function populate_select(dropdown, data_v, data_d=null) {
 		// get a list of TA ID objects and have a callback compile them into an array
 		get_ta( select_course_0.value, select_section_0.value, (vs) => {
 			var tas = [];
-			vs.map((cv, _, __) => {
+			vs.map((cv) => {
 				tas.push(cv.name);
 			});
 
@@ -549,7 +578,7 @@ function get_tas() {
 			let resp = JSON.parse(xhr.responseText);
 			let ta_ids = [];
 			let ta_names = [];
-			resp.results.map((c_ta, _, __) => {
+			resp.results.map((c_ta) => {
 				ta_ids.push(c_ta.id);
 				ta_names.push(c_ta.name);
 			});
@@ -588,7 +617,7 @@ function get_feedback(course, section, ta_name=null) {
 			let th_row = document.createElement('tr');
 
 			// build up the schema as the header row in the table
-			resp.schema.map((c_sch, _, __) => {
+			resp.schema.map((c_sch) => {
 				let cell = document.createElement('th');
 				cell.innerHTML = c_sch;
 				th_row.appendChild(cell);
@@ -603,7 +632,7 @@ function get_feedback(course, section, ta_name=null) {
 				ta_name_string.innerHTML = resp.feedbacks[0].ta;
 				feedback = resp.feedbacks[0].feedback;
 			} else {
-				resp.feedbacks.map((c_fb, _, __) => {
+				resp.feedbacks.map((c_fb) => {
 					if ( c_fb.ta === ta_name ) {
 						feedback = c_fb.feedback;
 						ta_name_string.innerHTML = c_fb.ta;
@@ -612,11 +641,11 @@ function get_feedback(course, section, ta_name=null) {
 			}
 
 			// For reach feedback form filled out...
-			feedback.map((c_fb, _, __) => {
+			feedback.map((c_fb) => {
 				let tr = document.createElement('tr');
 				
 				// for each response in a form...
-				c_fb.map((c_q, _, __) => {
+				c_fb.map((c_q) => {
 					let td = document.createElement('td');
 					td.innerHTML = c_q;
 					tr.appendChild(td);
@@ -624,6 +653,29 @@ function get_feedback(course, section, ta_name=null) {
 
 				tbody.append(tr);
 			});	
+
+			// ETL over quantifiable data (no NLP yet :(...) and loading into a second table
+			let q1 = [];
+			let q2 = [];
+			let q3 = [];
+			console.log(feedback);
+
+			// for each feedback form filled out...
+			feedback.map((c_fb) => {
+				q1.push(c_fb[0]);
+				q2.push(c_fb[1]);
+				q3.push(c_fb[2]);
+			});
+
+			q1avg = q1.reduce((a,b) => { return a + b}, 0) / q1.length;
+			q2avg = q2.reduce((a,b) => { return a + b}, 0) / q3.length;
+			q3avg = q3.reduce((a,b) => { return a + b}, 0) / q3.length;
+
+			q1median = median(q1);
+			q2median = median(q2);
+			q3median = median(q3);
+
+			
 
 			document.getElementById('data_table_0').style.display = '';
 		}	

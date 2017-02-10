@@ -16,7 +16,7 @@ import tornado.ioloop
 import tornado.web
 
 from datetime import datetime as dt
-from slog.slog import Slog
+from slog import Slog
 
 conf = toml.load('conf.toml')
 
@@ -66,16 +66,26 @@ class ManageHandler(tornado.web.RequestHandler):
 class SubmitFeedbackHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
     def post(self):
-        student_number = self.get_argument('student_number')
-        course_code = self.get_argument('course_code')
-        section_id = self.get_argument('section_id')
-        ta_id = self.get_argument('ta_id')
-        q1 = self.get_argument('q1')
-        q2 = self.get_argument('q2')
-        q3 = self.get_argument('q3')
-        feedback = self.get_argument('feedback')
-        status = dbhandler.submitFeedback(student_number, course_code, section_id, ta_id, q1, q2, q3, feedback)
-        self.write(json.dumps({'status' : status}))
+        resp = {
+                'status' : 'fail',
+                'msg': None
+            }
+        try:
+            student_number = self.get_argument('student_number')
+            course_code = self.get_argument('course_code')
+            section_id = self.get_argument('section_id')
+            ta_id = self.get_argument('ta_id')
+            q1 = self.get_argument('q1')
+            q2 = self.get_argument('q2')
+            q3 = self.get_argument('q3')
+            feedback = self.get_argument('feedback')
+        except KeyError as e:
+            print(e)
+        (http_status, status, message) = dbhandler.submitFeedback(student_number, course_code, section_id, ta_id, q1, q2, q3, feedback)
+        resp['status'] = status
+        resp['msg'] = message
+        self.write(json.dumps(resp))
+        self.set_status(http_status)
         self.finish()
 
 class GetCoursesHandler(tornado.web.RequestHandler):

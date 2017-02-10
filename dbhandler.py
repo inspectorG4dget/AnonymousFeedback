@@ -206,11 +206,11 @@ def submitFeedback(student_number, course_code, section_id, ta_id, q1, q2, q3, f
                 (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)''' ,
             (student_number, course_code, section_id, year, semester, ta_id, q1, q2, q3, feedback))
         conn.commit()
-        return 'success'
+        return (200, 'success', 'Success')
     except pg8000.ProgrammingError as e:
-        print(e)
+        # log.fail(e[3] + ' : ' + e[4])
         conn.rollback()
-        return False
+        return (400, 'fail', 'Duplicate feedback')
 
 def getCourseFeedbacks(courseCode, sectionCode):
     year, semester = getYearSemester()
