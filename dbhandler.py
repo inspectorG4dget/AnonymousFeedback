@@ -97,11 +97,11 @@ def getSectionTA(course_code, section_id, year=getYearSemester()[0], semester=ge
         year: the year during which the section is offered.
         semester: the semester during which the sections ifs offered.
     Returns:
-        A tuple with identifying information about a TA: (taID, firstName, lastName)
+        A tuple with identifying information about a TA: (taID, firstName, lastName, bio, img)
     '''
     c = conn.cursor()
     try:
-        c.execute('''SELECT taID, firstName, lastName
+        c.execute('''SELECT taID, firstName, lastName, profilepic, description
                     FROM TA, TEACHES
                     WHERE TA.stnum=TEACHES.taID
                         AND TEACHES.course=%s
@@ -156,9 +156,11 @@ def createCourse(course_code):
         conn.commit()
         return (200, 'success', 'Success')
     except pg8000.ProgrammingError:
+        log.fail('pg8000 error: ' + str(e[3]) + ' : ' + str(e[4]))
         conn.rollback()
         return (409, 'fail', 'Course already exists')
     except Exception:
+        log.fail('pg8000 error: ' + str(e[3]) + ' : ' + str(e[4]))
         conn.rollback()
         return (500, 'fail', 'An unknown error has occurred')
 
@@ -171,11 +173,11 @@ def createSection(courseCode, sectionCode, year, semester, weekday, startTime, e
         conn.commit()
         return (200, 'success', 'success')
     except pg8000.ProgrammingError as e:
-        print(e)
+        log.fail('pg8000 error: ' + str(e[3]) + ' : ' + str(e[4]))
         conn.rollback()
         return (409, 'fail', 'Section exists')
     except Exception as e:
-        print(e)
+        log.fail('pg8000 error: ' + str(e[3]) + ' : ' + str(e[4]))
         conn.rollback()
         return (500, 'fail', 'Database error')
 
@@ -188,11 +190,11 @@ def assign_ta_to_section(ta_id, course_code, section_id):
         conn.commit()
         return (200, 'success', 'Success')
     except pg8000.ProgrammingError as e:
-        print(e)
+        log.fail('pg8000 error: ' + str(e[3]) + ' : ' + str(e[4]))
         conn.rollback()
         return (409, 'fail', 'This TA is already assigned to this section')
     except Exception as e:
-        print(e)
+        log.fail('pg8000 error: ' + str(e[3]) + ' : ' + str(e[4]))
         conn.rollback()
         return (500, 'fail', 'Database error')
 
@@ -208,7 +210,7 @@ def submitFeedback(student_number, course_code, section_id, ta_id, q1, q2, q3, f
         conn.commit()
         return (200, 'success', 'Success')
     except pg8000.ProgrammingError as e:
-        # log.fail(e[3] + ' : ' + e[4])
+        log.fail('pg8000 error: ' + str(e[3]) + ' : ' + str(e[4]))
         conn.rollback()
         return (400, 'fail', 'Duplicate feedback')
 
@@ -231,9 +233,9 @@ def getCourseFeedbacks(courseCode, sectionCode):
         raw_feedbacks = c.fetchall()
 
     except pg8000.ProgrammingError as e:
-        print(e)
+        log.fail('pg8000 error: ' + str(e[3]) + ' : ' + str(e[4]))
         conn.rollback()
-        return False
+        return (500, 'fail', 'Could not fetch courses')
 
     feedbacks = {}
 
@@ -267,7 +269,7 @@ def getAllTAs():
         tas = c.fetchall()
         return [(str(row[0]), ' '.join(row[1:])) for row in tas]
     except pg8000.ProgrammingError as e:
-        print(e)
+        log.fail('pg8000 error: ' + str(e[3]) + ' : ' + str(e[4]))
         conn.rollback()
-        return False
+        return []
 
