@@ -85,9 +85,9 @@ function median(arr) {
 	arr.sort((a, b) => { return a - b } );
 	let half = Math.floor(arr.length/2);
 	if (arr.length % 2) {
-		return values[half];
+		return arr[half];
 	} else {
-		return (values[half - 1] + values[half]) / 2.0;
+		return (arr[half - 1] + arr[half]) / 2.0;
 	}
 }
 
@@ -182,15 +182,30 @@ let select_ta_0 = document.getElementById('select_ta_0');
 
 let ta_name_string = document.getElementById('ta_name_0');	
 let select_section_toggle_0 = new Event('toggle_enabled');
+let stats_table = document.getElementById('stats_table_0');
+			
+let stats_title_0 = document.getElementById('stats_title_0');
+let stats_subtitle_0 = document.getElementById('stats_subtitle_0');
+let feedback_title_0 = document.getElementById('feedback_title_0');
+
 
 select_course_0.addEventListener('change', (e) => {
 	clear_table(document.getElementById('data_table_0'));
 	clear_table(document.getElementById('stats_table_0'));
 	ta_name_string.innerHTML = '';
 	get_sections(select_course_0.value, 'select_section_0', populate_select);
+	stats_title_0.style.display = 'none'
+	stats_subtitle_0.innerHTML = '';
+	feedback_title_0.style.display = 'none'
+	clear_table(document.getElementById('data_table_0'));
+	clear_table(document.getElementById('stats_table_0'));
 });
 
 select_section_0.addEventListener('change', (e) => {
+	console.log('foo')
+	stats_title_0.style.display = 'none'
+	stats_subtitle_0.innerHTML = '';
+	feedback_title_0.style.display = 'none'
 	clear_table(document.getElementById('data_table_0'));
 	clear_table(document.getElementById('stats_table_0'));
 	ta_name_string.innerHTML = '';
@@ -203,10 +218,19 @@ select_section_0.addEventListener('change', (e) => {
 	});
 });
 
+select_ta_0.addEventListener('change', (e) => {
+	ta_name_string.innerHTML = '';
+	stats_title_0.style.display = 'none'
+	stats_subtitle_0.innerHTML = '';
+	feedback_title_0.style.display = 'none'
+	clear_table(document.getElementById('data_table_0'));
+	clear_table(document.getElementById('stats_table_0'));	
+});
+
 submit_btn_0.addEventListener('click', (e) => {
 	clear_table(document.getElementById('data_table_0'));
 	clear_table(document.getElementById('stats_table_0'));
-	feedback = get_feedback(select_course_0.value, select_section_0.value, select_ta_0.value);
+	get_feedback(select_course_0.value, select_section_0.value, select_ta_0.value);
 });
 
 /*************
@@ -653,12 +677,13 @@ function get_feedback(course, section, ta_name=null) {
 
 				tbody.append(tr);
 			});	
+			
+			document.getElementById('data_table_0').style.display = '';
 
 			// ETL over quantifiable data (no NLP yet :(...) and loading into a second table
 			let q1 = [];
 			let q2 = [];
 			let q3 = [];
-			console.log(feedback);
 
 			// for each feedback form filled out...
 			feedback.map((c_fb) => {
@@ -667,17 +692,52 @@ function get_feedback(course, section, ta_name=null) {
 				q3.push(c_fb[2]);
 			});
 
-			q1avg = q1.reduce((a,b) => { return a + b}, 0) / q1.length;
-			q2avg = q2.reduce((a,b) => { return a + b}, 0) / q3.length;
-			q3avg = q3.reduce((a,b) => { return a + b}, 0) / q3.length;
+			let mins = [Math.min.apply(null, q1), Math.min.apply(null, q2), Math.min.apply(null, q3)];
+			let maxs = [Math.max.apply(null, q1), Math.max.apply(null, q2), Math.max.apply(null, q3)];
+			let avgs = [q1, q2, q3].map((c_arr) => c_arr.reduce((a,b) => { return a + b}, 0) / c_arr.length);
+			let meds = [median(q1), median(q2), median(q3)];
+			let stddevs = [stddev(q1), stddev(q2), stddev(q3)];
 
-			q1median = median(q1);
-			q2median = median(q2);
-			q3median = median(q3);
+			let stats = [mins, maxs, avgs, meds, stddevs];
 
-			
 
-			document.getElementById('data_table_0').style.display = '';
+			let stats_table = document.getElementById('stats_table_0');
+			let stats_table_body = stats_table.getElementsByTagName('tbody')[0];
+			let stats_table_header = stats_table.getElementsByTagName('thead')[0];
+			let feedback_header = document.getElementById('data_table_0').getElementsByTagName('thead')[0].getElementsByTagName('tr')[0];
+			let feedback_header_field = feedback_header.getElementsByTagName('th')[feedback_header.childElementCount - 1];
+
+			stats_table_header.innerHTML = '<tr><th>Question</th><th>Min</th><th>Max</th><th>Avg</th><th>Med</th><th>Stddev</th></tr>';
+
+			for ( let i = 0; i < 3; i++ ) {
+				let row = document.createElement('tr');
+				let header_cell = document.createElement('td');
+				header_cell.innerHTML = '<strong>q' + (i + 1) + '</strong>';
+				row.appendChild(header_cell);
+
+				for ( let j = 0; j < 5; j++ ) {
+					let cell = document.createElement('td');
+					cell.innerHTML = stats[j][i].toFixed(2);
+					row.appendChild(cell);
+				}
+
+				stats_table_body.appendChild(row);
+			}
+
+			if ( feedback.length > 0 ) {
+				stats_table.style.display = '';
+				stats_title_0.style.display = '';
+				stats_subtitle_0.style.display = '';
+				if ( feedback.length === 1 ) {
+					feedback_header_field.innerHTML = '<strong>feedback <em>(' + feedback.length + ' item)</em></strong>';
+					stats_subtitle_0.innerHTML = '<em>Based on ' + feedback.length  + ' feedback item</em>';
+				} else {
+					feedback_header_field.innerHTML = '<strong>feedback <em>(' + feedback.length + ' items)</em></strong>';
+					stats_subtitle_0.innerHTML = '<em>Based on ' + feedback.length  + ' feedback items</em>';
+				}
+				feedback_title_0.style.display = '';
+				
+			}
 		}	
 	}
 	xhr.open('GET', '/viewFeedBack?courseCode=' + course + '&sectionCode=' + section);

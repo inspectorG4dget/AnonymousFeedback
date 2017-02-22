@@ -116,10 +116,15 @@ select_section_0.addEventListener('change', (e) => {
 		if ( resp.length  > 1 ) {
 			populate_select( select_ta_0, ta_ids, ta_names );
 			select_ta_0.disabled = false;
+			populate_bio();
 		} else if ( resp.length === 1 ) {
 			populate_select( select_ta_0, ta_ids, ta_names );
 			select_ta_0.disabled = true;
-		} 
+			populate_bio();
+		} else {
+			hide_bio();
+		}
+
 	});
 });
 
@@ -144,6 +149,9 @@ input_student_number_0.addEventListener('input', (e) => {
 	}
 });
 
+select_ta_0.addEventListener('change', (e) => {
+	populate_bio();
+});
 
 let q1_0 = document.getElementById('q1_0');
 let q1_val_0 = document.getElementById('q1_val_0');
@@ -153,18 +161,21 @@ let q3_0 = document.getElementById('q3_0');
 let q3_val_0 = document.getElementById('q3_val_0');
 let feedback_input_0 = document.getElementById('feedback_0');
 
-q1_val_0.innerHTML = 'Currently: ' + q1_0.value;
-q2_val_0.innerHTML = 'Currently: ' + q2_0.value;
-q3_val_0.innerHTML = 'Currently: ' + q3_0.value + ')';
+let values_a = ['Strongly disagree', 'Disagree', 'Neither agree nor disagree', 'Agree', 'Strongly agree'];
+let values_b = ['Very poor', 'Poor', 'Satisfactory', 'Good', 'Excellent'];
+
+q1_val_0.innerHTML = 'Currently: ' + values_a[parseInt(q1_0.value) + 2];
+q2_val_0.innerHTML = 'Currently: ' + values_b[parseInt(q2_0.value) + 2];
+q3_val_0.innerHTML = 'Currently: ' + values_b[parseInt(q3_0.value) + 2];
 
 q1_0.addEventListener('change', (e) => {
-	q1_val_0.innerHTML = 'Currently: ' + q1_0.value;
+	q1_val_0.innerHTML = 'Currently: ' + values_a[parseInt(q1_0.value) + 2];
 });
 q2_0.addEventListener('change', (e) => {
-	q2_val_0.innerHTML = 'Currently: ' + q2_0.value;
+	q2_val_0.innerHTML = 'Currently: ' + values_b[parseInt(q2_0.value) + 2];
 });
 q3_0.addEventListener('change', (e) => {
-	q3_val_0.innerHTML = 'Currently: ' + q3_0.value + ')';
+	q3_val_0.innerHTML = 'Currently: ' + values_b[parseInt(q3_0.value) + 2];
 });
 
 submit_btn_0.addEventListener('click', (e) => {
@@ -172,20 +183,28 @@ submit_btn_0.addEventListener('click', (e) => {
 	// basic client-side input validation 
 	if ( input_student_number_0.value.length === 0 ) {
 		animate_failure( submit_btn_0, 'Please enter a student number', 'Submit Feedback' );
+		return;
 	} else if ( !input_student_number_0.value.match(/^\d{7}$/) ) {
 		animate_failure( submit_btn_0, 'Invalid student number', 'Submit Feedback' );
+		return;
 	} else if ( !select_course_0.value.toUpperCase().match(/^[A-Z]{3}\d{4}$/) ) {
 		animate_failure( submit_btn_0, 'Invalid course code', 'Submit Feedback' );
+		return;
 	} else if ( select_section_0.value === '' ) {
 		animate_failure( submit_btn_0, 'Invaid section ID', 'Submit Feedback' );
+		return;
 	} else if ( select_ta_0.value === '' ) {
 		animate_failure( submit_btn_0, 'Invalid TA name', 'Submit Feedback' );
+		return;
 	} else if ( q1_0.value < 0 || q1_0.value > 10 ) {
 		animate_failure( submit_btn_0, 'Invalid value for question 1', 'Submit Feedback' );
+		return;
 	} else if ( q2_0.value < 0 || q1_0.value > 10 ) {
 		animate_failure( submit_btn_0, 'Invalid value for question 2', 'Submit Feedback' );
+		return;
 	} else if ( q3_0.value < 0 || q1_0.value > 10 ) {
 		animate_failure( submit_btn_0, 'Invalid value for question 3', 'Submit Feedback' );
+		return;
 	}
 
 	submit_feedback(
@@ -233,6 +252,8 @@ function populate_select(dropdown, data_v, data_d=null) {
 			if ( ta_names.length === 0 ) {
 				ta_ids = [-1];
 				ta_names = ['No TAs available for this section or course'];
+				hide_bio();
+				return;
 			}
 
 
@@ -245,6 +266,8 @@ function populate_select(dropdown, data_v, data_d=null) {
 			} else {
 				select_ta_0.disabled = true;
 			}
+
+			populate_bio();
 		});
 	}
 }
@@ -319,6 +342,7 @@ function get_sections(course, select_id, callback) {
 				clear_select( select_ta_0 );
 
 				// reset certain UI elements
+				hide_bio();
 				clear_select( dropdown );
 				dropdown.appendChild(opt1);
 
@@ -351,6 +375,7 @@ function get_ta(course, section, callback) {
 				submit_btn_0.disabled = false;
 				submit_btn_0.innerHTML = 'Submit Feedback';
 			} else {
+				hide_bio();
 				q1_0.disabled = true;
 				q2_0.disabled = true;
 				q3_0.disabled = true;
@@ -363,6 +388,7 @@ function get_ta(course, section, callback) {
 				select_ta_0.appendChild(empty_dropdown);
 			}
 		} else if ( xhr.readyState === 4 && xhr.status !== 200 ) {
+			hide_bio();
 			resp = JSON.parse(xhr.responseText);
 			animate_failure('Server-side error', 'Submit Feedback');
 		}
@@ -380,7 +406,6 @@ function submit_feedback(student_number, course_code, section_id, ta_id, q1, q2,
 					animate_success(submit_btn_0, 'Feedback submitted', 2000, 'Submit Feedback');
 				} else {
 					let resp = JSON.parse(xhr.responseText);
-					console.log(resp['msg']);
 					animate_failure(submit_btn_0, resp['msg'], 'Submit Feedback');
 				}
 			}
@@ -390,5 +415,42 @@ function submit_feedback(student_number, course_code, section_id, ta_id, q1, q2,
 				+ q2 + '&q3=' + q3 + '&feedback=' + feedback);
 		xhr.send();
 	}
+}
+
+function populate_bio() {
+	let bio_container = document.getElementById('bio');
+	let bio_img = bio_container.getElementsByTagName('img')[0];
+	let bio_txt = bio_container.getElementsByTagName('p')[0];
+	let current_course = document.getElementById('select_course_0').value;
+	let current_section = document.getElementById('select_section_0').value;
+	let current_ta_id = document.getElementById('select_ta_0').value;
+
+	let xhr = new XMLHttpRequest();
+	xhr.onreadystatechange = () => {
+		if ( xhr.readyState === 4 && xhr.status === 200 ) {
+			let resp = JSON.parse(xhr.responseText);
+			let current_ta_bio = null;
+			let current_ta_img = null;
+			resp['results'].map((c_ta) => {
+				if ( c_ta['taID'] === current_ta_id ) {
+					current_ta_bio = c_ta['bio'];
+					current_ta_img = c_ta['img'];
+				}
+			});
+			
+			bio_img.src = '/images/' + current_ta_img;
+			bio_txt.innerHTML = current_ta_bio;
+
+			bio_container.style.display = '';
+		}
+	}
+
+	xhr.open('GET', '/getSectionTAs?course_code=' + current_course + '&section_id=' + current_section);
+	xhr.send();
+}
+
+function hide_bio() {
+	let bio_container = document.getElementById('bio');
+	bio_container.style.display = 'none';
 }
 

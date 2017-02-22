@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="en_CA">
 	<head>
-		<title>Feedbadck Management</title>
+		<!-- foo! -->
+		<title>Submit Feedback</title>
 		<link rel="stylesheet" href="/css/bootstrap.min.css">
 	<body>
 		<nav class="navbar navbar-inverse navbar-static-top" role="main">
@@ -13,14 +14,14 @@
 					<span class="icon-bar"></span>
 					<span class="icon-bar"></span>
 					</button>
-					<a class="navbar-brand" href="/">AF Management</a>
+					<a class="navbar-brand" href="/">Anonymous Feedback</a>
 				</div>
 				<div id="navbar" class="collapse navbar-collapse">
 					<ul class="nav navbar-nav">
 						<li class="active"><a href="#" id="nav_feedback">Submit feedback</a></li>
-						<li><a href="#" id="nav_profiles">TA Profiles</a></li>
+						<li style="display:none;"><a href="#" id="nav_profiles">TA Profiles</a></li>
 					</ul>
-				</div><!--/.nav-collapse -->
+				</div>  <!--/.nav-collapse -->
 			</div>
 		</nav>
 
@@ -28,7 +29,7 @@
 			<form>
 				<div class="form-group">
 					<label for="input_student_number_0">Input your student number</label>
-					<input type="number" name="input_student_number_0" class="form-control" id="input_student_number_0" placeholder="1111111" required>	
+					<input type="number" name="input_student_number_0" class="form-control" id="input_student_number_0" placeholder="Your student number" required>	
 				</div>
 
 				<div class="form-group">
@@ -50,17 +51,22 @@
 					</select>
 				</div>
 
+				<div id="bio" style="display:none;text-align:center;border:1px solid #ccc;border-radius:5px;padding-top:10px;">
+					<img src="" width="200px" height="200px" style="margin:auto;text-align:center;border-radius:5px;">
+					<p style="text-align:center;margin-top:5px;"></p>
+				</div>
+
 				<div class="form-group">
-					<label for="q1_0">How often was the TA prepared? (<span id="q1_val_0">Currently: 5</span>)</label>
-					<input type="range" class="form-control" id="q1_0" name="q1" min="0" max="10" step="1" value="5" disabled>
+					<label for="q1_0">I find that the TA is well-prepared for class.(<span id="q1_val_0">Currently: Satisfactory</span>)</label>
+					<input type="range" class="form-control" id="q1_0" name="q1" min="-2" max="2" step="1" value="0" disabled>
 				</div>
 				<div class="form-group">
-					<label for="q2_0">How familiar was the TA with the subject matter? (<span id="q2_val_0">Currently: 5</span>)</label>
-					<input type="range" class="form-control" id="q2_0" name="q2" min="0" max="10" step="1" value="5" disabled>
+					<label for="q2_0">How familiar was the TA with the subject matter? (<span id="q2_val_0">Currently: Satisfactory</span>)</label>
+					<input type="range" class="form-control" id="q2_0" name="q2" min="-2" max="2" step="1" value="0" disabled>
 				</div>
 				<div class="form-group">
-					<label for="q3_0">How relevant was the lab/DGD material to what was discussed in the lectures? (<span id="q3_val_0">Currently: 5<span></label>
-					<input type="range" class="form-control" id="q3_0" name="q3" min="0" max="10" step="1" value="5" disabled>
+					<label for="q3_0">How relevant was the lab/DGD material to what was discussed in the lectures? (<span id="q3_val_0">Currently: Satisfactory<span>)</label>
+					<input type="range" class="form-control" id="q3_0" name="q3" min="-2" max="2" step="1" value="0" disabled>
 				</div>
 				<div class="form-group">
 					<label for="feedback_0">Use this field to write down any additional comments you have about this TA.</label>

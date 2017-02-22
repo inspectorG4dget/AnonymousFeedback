@@ -20,7 +20,7 @@ from slog import Slog
 
 conf = toml.load('conf.toml')
 
-log = Slog(conf['log']['file'], conf['log']['level'])
+log = Slog(conf['log']['file'], conf['log']['level'], inspect=True)
 
 dbhandler.log = log
 
@@ -129,9 +129,9 @@ class GetSectionTAHandler(tornado.web.RequestHandler):
         except :
             active = False
         results = list(dbhandler.getSectionTA(course_code, section_id, year, semester))
-        for i,(taID, fname, lname) in enumerate(results):
+        for i,(taID, fname, lname, img, bio) in enumerate(results):
             name = '%s %s' %(fname, lname)
-            results[i] = {'taID': str(taID), 'name': name}
+            results[i] = {'taID': str(taID), 'name': name, 'bio' : bio, 'img' : img}
         self.write(json.dumps({'results' : results}))
         self.finish()
 
