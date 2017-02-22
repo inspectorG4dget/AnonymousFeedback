@@ -48,7 +48,7 @@ class BaseHandler(tornado.web.RequestHandler):
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
-        self.render('assets/index.html')
+        self.render('assets/feedback.html')
 
 class FeedBackHandler(tornado.web.RequestHandler):
     def get(self):
