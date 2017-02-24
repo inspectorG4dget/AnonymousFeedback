@@ -378,7 +378,7 @@ class AnonymousFeedback(tornado.web.Application):
                 (r'/submitFeedback',        SubmitFeedbackHandler),
                 (r'/getSections',           GetSectionsHandler),
                 (r'/getCourses',            GetCoursesHandler),
-                (r'/addCourse',             AddCourseHandler),
+                # (r'/addCourse',             AddCourseHandler),
                 # (r'/addSection',            AddSectionHandler),
                 # (r'/addTA',                 AddTAHandler),
                 # (r'/assignTA',              AssignTAHandler),
