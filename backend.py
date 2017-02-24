@@ -48,7 +48,7 @@ class BaseHandler(tornado.web.RequestHandler):
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
-        self.render('assets/index.html')
+        self.render('assets/feedback.html')
 
 class FeedBackHandler(tornado.web.RequestHandler):
     def get(self):
@@ -342,6 +342,19 @@ class ListAllTAsHandler(tornado.web.RequestHandler):
         self.write(json.dumps({'results': ta_list}))
         self.finish()
 
+# a dummy handler which returns 404 for all request types.
+class _404handler(tornado.web.RequestHandler):
+    def get(self):
+        self.set_status(404)
+    def post(self):
+        self.set_status(404)
+    def put(self):
+        self.set_status(404)
+    def patch(self):
+        self.set_status(404)
+    def delete(self):
+        self.set_status(404)
+
 ####
 # Tornado uses 'handlers' to take care of requests to certain URLs
 # This makes certain API requests from a web page or such an easy to handle
@@ -357,18 +370,24 @@ class AnonymousFeedback(tornado.web.Application):
         handlers = [
                 (r'/',                      MainHandler),
                 (r'/feedback',              FeedBackHandler),
-                (r'/manage',                ManageHandler),
+
+                # disabled temporarily pending integration with school systems
+                # (r'/manage',                ManageHandler),
+
                 # asynchronous API end poins
                 (r'/submitFeedback',        SubmitFeedbackHandler),
                 (r'/getSections',           GetSectionsHandler),
                 (r'/getCourses',            GetCoursesHandler),
-                (r'/addCourse',             AddCourseHandler),
-                (r'/addSection',            AddSectionHandler),
-                (r'/addTA',                 AddTAHandler),
-                (r'/assignTA',              AssignTAHandler),
-                (r'/viewFeedBack',          ViewFeedbackHandler),
+                # (r'/addCourse',             AddCourseHandler),
+                # (r'/addSection',            AddSectionHandler),
+                # (r'/addTA',                 AddTAHandler),
+                # (r'/assignTA',              AssignTAHandler),
+                # (r'/viewFeedBack',          ViewFeedbackHandler),
                 (r'/getSectionTAs',         GetSectionTAHandler),
                 (r'/getTA',                 ListAllTAsHandler),
+
+                (r'/js/prof.js',    _404handler),
+
                 # Static asset handlers
                 (r'/(favicon.ico)', tornado.web.StaticFileHandler, {'path': 'assets/'        }),
                 (r'/images/(.*)',   tornado.web.StaticFileHandler, {'path': 'assets/images/' }),
